@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_main.h>
 
@@ -10,32 +8,28 @@
 #include <harfbuzz/hb-ft.h>
 
 #include <string>
-std::wstring text = L"กระต่ายตาตี่นั่งเล่นตู้ม้า";
+std::wstring text = L"ปักคมมีดกรีดกลางใจ แช่เกลือใว้ให้ตายทั้งเป็น";
 
-struct Font
-{
+struct Font {
 	FT_Face face;
 	hb_font_t* hb_font;
 };
 
 void CreateFont(const FT_Library& library, const std::string& path,
-		const int& size, Font& font)
-{
+		const int& size, Font& font) {
 	FT_New_Face(library, path.c_str(), 0, &font.face);
 	FT_Set_Pixel_Sizes(font.face, 0, size);
 
 	font.hb_font = hb_ft_font_create(font.face, 0);
 }
 
-void DestroyFont(Font& font)
-{
+void DestroyFont(Font& font) {
 	hb_font_destroy(font.hb_font);
 	FT_Done_Face(font.face);
 }
 
 void CreateSurfaceFromFT_Bitmap(const FT_Bitmap& bitmap,
-		const unsigned int& color, SDL_Surface*& output)
-{
+		const unsigned int& color, SDL_Surface*& output) {
 	output = SDL_CreateRGBSurface(0, bitmap.width, bitmap.rows, 32, 0x000000ff,
 			0x0000ff00, 0x00ff0000, 0xff000000);
 	SDL_FillRect(output, NULL, color);
@@ -46,14 +40,12 @@ void CreateSurfaceFromFT_Bitmap(const FT_Bitmap& bitmap,
 	unsigned int *target_pixels =
 			reinterpret_cast<unsigned int*>(output->pixels);
 
-	for (int i = 0; i < bitmap.rows; i++)
-	{
-		for (int j = 0; j < bitmap.width; j++)
-		{
+	for (int i = 0; i < bitmap.rows; i++) {
+		for (int j = 0; j < bitmap.width; j++) {
 			unsigned int pixel = target_pixels[i * output->w + j];
 			unsigned int alpha = src_pixels[i * bitmap.pitch + j];
 
-			pixel &= (alpha << 24) | 0x00ffffff;
+			pixel &= ((alpha << 24) | 0x00ffffff);
 
 			target_pixels[i * output->w + j] = pixel;
 		}
@@ -64,14 +56,12 @@ void CreateSurfaceFromFT_Bitmap(const FT_Bitmap& bitmap,
 void CalculateSurfaceBound(hb_glyph_info_t *glyph_infos,
 		hb_glyph_position_t *glyph_positions, const unsigned int& glyph_count,
 		const FT_Face& face, SDL_Rect& rect, const FT_Int32& flags =
-				FT_LOAD_DEFAULT)
-{
+				FT_LOAD_DEFAULT) {
 	int width = 0;
 	int above_base_line = 0;
 	int below_base_line = 0;
 
-	for (unsigned int i = 0; i < glyph_count; i++)
-	{
+	for (unsigned int i = 0; i < glyph_count; i++) {
 		FT_Load_Glyph(face, glyph_infos[i].codepoint, FT_LOAD_DEFAULT | flags);
 		width += (glyph_positions[i].x_advance >> 6);
 		int bearing = (face->glyph->metrics.horiBearingY >> 6)
@@ -94,8 +84,7 @@ void CalculateSurfaceBound(hb_glyph_info_t *glyph_infos,
 
 void CreateTexture(const std::wstring& text, const unsigned int& color,
 		const Font& font, SDL_Renderer*& renderer, SDL_Texture*& target,
-		SDL_Rect& rect, const FT_Int32& flags = FT_LOAD_DEFAULT)
-{
+		SDL_Rect& rect, const FT_Int32& flags = FT_LOAD_DEFAULT) {
 	hb_buffer_t *buffer = hb_buffer_create();
 
 	hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
@@ -126,8 +115,7 @@ void CreateTexture(const std::wstring& text, const unsigned int& color,
 	int baseline = -rect.y;
 	int x = 0;
 
-	for (unsigned int i = 0; i < glyph_count; i++)
-	{
+	for (unsigned int i = 0; i < glyph_count; i++) {
 		FT_Load_Glyph(font.face, glyph_infos[i].codepoint,
 				FT_LOAD_RENDER | flags);
 		SDL_Surface* surface = NULL;
@@ -156,10 +144,9 @@ void CreateTexture(const std::wstring& text, const unsigned int& color,
 	SDL_SetRenderTarget(renderer, NULL);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
 	SDL_Init(SDL_INIT_EVERYTHING);
-	SDL_Window* window = SDL_CreateWindow("Test Window",
+	SDL_Window* window = SDL_CreateWindow("SDL2 - FreeType 2 - HarfBuzz",
 			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, 0);
 
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
@@ -172,11 +159,9 @@ int main(int argc, char **argv)
 
 	SDL_Rect rect, dest;
 
-	while (true)
-	{
+	while (true) {
 		SDL_Event event;
-		if (SDL_PollEvent(&event))
-		{
+		if (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT)
 				break;
 		}
@@ -192,7 +177,6 @@ int main(int argc, char **argv)
 		SDL_SetRenderDrawColor(renderer, 0x50, 0x82, 0xaa, 0xff);
 		SDL_RenderFillRect(renderer, NULL);
 
-		SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_ADD);
 		SDL_RenderCopy(renderer, texture, NULL, &dest);
 
 		SDL_RenderPresent(renderer);
