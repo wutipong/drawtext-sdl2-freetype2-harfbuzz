@@ -30,7 +30,7 @@
 								<option id="gnu.cpp.compiler.mingw.exe.debug.option.optimization.level.1088409678" name="Optimization Level" superClass="gnu.cpp.compiler.mingw.exe.debug.option.optimization.level" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.mingw.exe.debug.option.debugging.level.1192422259" name="Debug Level" superClass="gnu.cpp.compiler.mingw.exe.debug.option.debugging.level" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.include.paths.1336821583" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/mingw/include/freetype2"/>
+									<listOptionValue builtIn="false" value="c:/mingw/include/freetype2"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.704972918" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
