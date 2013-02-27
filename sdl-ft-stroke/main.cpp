@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
 	FT_Init_FreeType(&library);
 
 	FT_Face face;
-	FT_New_Face(library, "./font/ThaiSansNeue-ExtraLight.otf", 0, &face);
+	FT_New_Face(library, "./font/LayijiMahaniyom-Bao-1.2.ttf", 0, &face);
 	FT_Set_Pixel_Sizes(face, 0, 64);
 
 	FT_Stroker stroker;
