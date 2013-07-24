@@ -29,15 +29,38 @@ cl_command_queue command_queue;
 cl_kernel kernel;
 cl_program program;
 cl_context context ;
+cl_device_id device_id = NULL;   
 
 bool InitOpenCl()
 {
 	cl_platform_id platform_id = NULL;
-	cl_device_id device_id = NULL;   
 	cl_uint ret_num_devices = 0;
 	cl_uint ret_num_platforms = 0;
 
-	cl_int ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
+	cl_int ret = clGetPlatformIDs(0, NULL, &ret_num_platforms);
+
+	const size_t max_buffer_size = 1024;
+	size_t buffer_size = 1024;
+	char* buffer = new char[max_buffer_size];
+	
+	cl_platform_id* temp = new cl_platform_id[ret_num_platforms];
+	ret = clGetPlatformIDs(ret_num_platforms, temp, NULL);
+	for(int i = 0;
+		i<ret_num_platforms;
+		i++)
+	{
+		
+		ret = clGetPlatformInfo(temp[i],
+			CL_PLATFORM_NAME,
+			buffer_size,
+			buffer,
+			&buffer_size);
+		
+		std::cout<<"Platform name : "<<buffer<<std::endl;
+		platform_id = temp[i];
+	}
+	delete[] temp;
+	
 
 	ret = clGetDeviceIDs( 
 			platform_id, 
@@ -47,8 +70,6 @@ bool InitOpenCl()
 			&ret_num_devices);
 		
 	context = clCreateContext( NULL, 1, &device_id, NULL, NULL, &ret);
-
-	command_queue = clCreateCommandQueue(context, device_id, 0, &ret);
 
 	size_t length = strlen(opencl_kernel);
 
@@ -62,7 +83,8 @@ bool InitOpenCl()
 	ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
 
 	kernel = clCreateKernel(program, "update_alpha", &ret);
-
+	
+	command_queue = clCreateCommandQueue(context, device_id, 0, &ret);
 	return true;
 }
 
@@ -81,10 +103,14 @@ void CreateSurfaceFromFT_Bitmap(const FT_Bitmap& bitmap,
 
 	SDL_FillRect(output, NULL, color);
 
+	if(bitmap.width == 0 || bitmap.rows == 0)
+		return;
+		
 	SDL_LockSurface(output);
 
 	cl_int ret;
 	size_t global_item_size = bitmap.width*bitmap.rows; 
+	size_t local_item_size = bitmap.width;
 	
 	cl_mem alpha_mem_obj = clCreateBuffer(context, 
 			CL_MEM_READ_ONLY,
@@ -136,7 +162,7 @@ void CreateSurfaceFromFT_Bitmap(const FT_Bitmap& bitmap,
 			1, 
 			NULL, 
 			&global_item_size, 
-			NULL, 
+			&local_item_size, 
 			0, 
 			NULL, 
 			NULL);
@@ -156,14 +182,18 @@ void CreateSurfaceFromFT_Bitmap(const FT_Bitmap& bitmap,
 	ret = clReleaseMemObject(in_pixels_mem_obj);
 	ret = clReleaseMemObject(out_pixels_mem_obj);
 	
+	
+	
 	SDL_UnlockSurface(output);
 }
 
 void CleanUpOpenCL()
 {
 	cl_int ret;
+	
 	ret = clFlush(command_queue);
 	ret = clFinish(command_queue);
+	
 	ret = clReleaseKernel(kernel);
 	ret = clReleaseProgram(program);
 	ret = clReleaseCommandQueue(command_queue);
