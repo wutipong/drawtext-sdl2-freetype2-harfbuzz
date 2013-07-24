@@ -36,32 +36,32 @@ bool InitOpenCl()
 	cl_device_id device_id = NULL;   
 	cl_uint ret_num_devices = 0;
 	cl_uint ret_num_platforms = 0;
-	
+
 	cl_int ret = clGetPlatformIDs(1, &platform_id, &ret_num_platforms);
 
-    ret = clGetDeviceIDs( 
+	ret = clGetDeviceIDs( 
 			platform_id, 
 			CL_DEVICE_TYPE_DEFAULT,
 			1, 
-            &device_id, 
+			&device_id, 
 			&ret_num_devices);
-			
+		
 	context = clCreateContext( NULL, 1, &device_id, NULL, NULL, &ret);
-    
-    command_queue = clCreateCommandQueue(context, device_id, 0, &ret);
-	
+
+	command_queue = clCreateCommandQueue(context, device_id, 0, &ret);
+
 	size_t length = strlen(opencl_kernel);
 
-    cl_program program = clCreateProgramWithSource(
+	cl_program program = clCreateProgramWithSource(
 			context, 
 			1, 
 			&opencl_kernel, 
 			&length, 
 			&ret);
-    
-    ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
-    
-    kernel = clCreateKernel(program, "update_alpha", &ret);
+
+	ret = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
+
+	kernel = clCreateKernel(program, "update_alpha", &ret);
 
 	return true;
 }
@@ -88,19 +88,19 @@ void CreateSurfaceFromFT_Bitmap(const FT_Bitmap& bitmap,
 	
 	cl_mem alpha_mem_obj = clCreateBuffer(context, 
 			CL_MEM_READ_ONLY,
-            global_item_size * sizeof(cl_uchar), 
+			global_item_size * sizeof(cl_uchar), 
 			NULL, 
 			&ret);
 			
-    cl_mem in_pixels_mem_obj = clCreateBuffer(context, 
+	cl_mem in_pixels_mem_obj = clCreateBuffer(context, 
 			CL_MEM_READ_ONLY,
-            global_item_size * sizeof(cl_uchar4), 
+			global_item_size * sizeof(cl_uchar4), 
 			NULL, 
 			&ret);
 	
 	cl_mem out_pixels_mem_obj = clCreateBuffer(context, 
 			CL_MEM_WRITE_ONLY,
-            global_item_size * sizeof(cl_uchar4), 
+			global_item_size * sizeof(cl_uchar4), 
 			NULL, 
 			&ret);
 	
@@ -109,28 +109,28 @@ void CreateSurfaceFromFT_Bitmap(const FT_Bitmap& bitmap,
 			alpha_mem_obj, 
 			CL_TRUE, 
 			0,
-            global_item_size * sizeof(cl_uchar), 
+			global_item_size * sizeof(cl_uchar), 
 			bitmap.buffer, 
 			0, 
 			NULL, 
 			NULL);
 			
-    ret = clEnqueueWriteBuffer(
+	ret = clEnqueueWriteBuffer(
 			command_queue, 
 			in_pixels_mem_obj, 
 			CL_TRUE, 
 			0, 
-            global_item_size * sizeof(cl_uchar4), 
+			global_item_size * sizeof(cl_uchar4), 
 			output->pixels, 
 			0, 
 			NULL, 
 			NULL);
 			
 	ret = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&alpha_mem_obj);
-    ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&in_pixels_mem_obj);
+	ret = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&in_pixels_mem_obj);
 	ret = clSetKernelArg(kernel, 2, sizeof(cl_mem), (void *)&out_pixels_mem_obj);
 	
-    ret = clEnqueueNDRangeKernel(
+	ret = clEnqueueNDRangeKernel(
 			command_queue, 
 			kernel, 
 			1, 
@@ -146,14 +146,14 @@ void CreateSurfaceFromFT_Bitmap(const FT_Bitmap& bitmap,
 			out_pixels_mem_obj, 
 			CL_TRUE, 
 			0, 
-            global_item_size * sizeof(cl_uchar4), 
+	global_item_size * sizeof(cl_uchar4), 
 			output->pixels, 
 			0, 
 			NULL, 
 			NULL);
 			
 	ret = clReleaseMemObject(alpha_mem_obj);
-    ret = clReleaseMemObject(in_pixels_mem_obj);
+	ret = clReleaseMemObject(in_pixels_mem_obj);
 	ret = clReleaseMemObject(out_pixels_mem_obj);
 	
 	SDL_UnlockSurface(output);
@@ -162,12 +162,12 @@ void CreateSurfaceFromFT_Bitmap(const FT_Bitmap& bitmap,
 void CleanUpOpenCL()
 {
 	cl_int ret;
-    ret = clFlush(command_queue);
-    ret = clFinish(command_queue);
-    ret = clReleaseKernel(kernel);
-    ret = clReleaseProgram(program);
-    ret = clReleaseCommandQueue(command_queue);
-    ret = clReleaseContext(context);
+	ret = clFlush(command_queue);
+	ret = clFinish(command_queue);
+	ret = clReleaseKernel(kernel);
+	ret = clReleaseProgram(program);
+	ret = clReleaseCommandQueue(command_queue);
+	ret = clReleaseContext(context);
 
 }
 #else
