@@ -1,4 +1,5 @@
-#include <iostream>
+﻿#include <iostream>
+#include <string>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -6,25 +7,35 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_main.h>
 
-#include <string>
+const unsigned int WIDTH = 1280;
+const unsigned int HEIGHT = 720;
 
-std::wstring text = L"เป็ดไก่ห่านหงส์";
+const std::wstring TEXT = L"เป็ดไก่ห่านหงส์";
 
 void CreateSurfaceFromFT_Bitmap(const FT_Bitmap& bitmap,
-		const unsigned int& color, SDL_Surface*& output) {
-	output = SDL_CreateRGBSurface(0, bitmap.width, bitmap.rows, 32, 0x000000ff,
-			0x0000ff00, 0x00ff0000, 0xff000000);
+								const unsigned int& color, 
+								SDL_Surface*& output) 
+{
+	output = SDL_CreateRGBSurface(	0, 
+		bitmap.width, 
+		bitmap.rows, 
+		32, 
+		0x000000ff,
+		0x0000ff00, 
+		0x00ff0000, 
+		0xff000000);
 
 	SDL_FillRect(output, NULL, color);
 
 	SDL_LockSurface(output);
 
 	unsigned char *src_pixels = bitmap.buffer;
-	unsigned int *target_pixels =
-			reinterpret_cast<unsigned int*>(output->pixels);
+	unsigned int *target_pixels = reinterpret_cast<unsigned int*>(output->pixels);
 
-	for (int i = 0; i < bitmap.rows; i++) {
-		for (int j = 0; j < bitmap.width; j++) {
+	for (int i = 0; i < bitmap.rows; i++) 
+	{
+		for (int j = 0; j < bitmap.width; j++) 
+		{
 			unsigned int pixel = target_pixels[i * output->w + j];
 			unsigned int alpha = src_pixels[i * bitmap.pitch + j];
 
@@ -36,21 +47,25 @@ void CreateSurfaceFromFT_Bitmap(const FT_Bitmap& bitmap,
 	SDL_UnlockSurface(output);
 }
 
-void DrawText(const std::wstring& text, const unsigned int& color,
-		const int& baseline, const int& x_start, const FT_Face& face,
-		SDL_Renderer*& renderer) {
+void DrawText(const std::wstring& text, 
+			  const unsigned int& color,
+			  const int& baseline, 
+			  const int& x_start, 
+			  const FT_Face& face,
+			  SDL_Renderer*& renderer) 
+{
 
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
 	int x = x_start;
 
-	for (unsigned int i = 0; i < text.length(); i++) {
+	for (unsigned int i = 0; i < text.length(); i++) 
+	{
 		FT_Load_Char(face, text[i], FT_LOAD_RENDER);
 
 		SDL_Surface* surface = NULL;
 		CreateSurfaceFromFT_Bitmap(face->glyph->bitmap, color, surface);
-		SDL_Texture* glyph_texture = SDL_CreateTextureFromSurface(renderer,
-				surface);
+		SDL_Texture* glyph_texture = SDL_CreateTextureFromSurface(renderer, surface);
 
 		SDL_Rect dest;
 		dest.x = x + (face->glyph->metrics.horiBearingX >> 6);
@@ -68,10 +83,16 @@ void DrawText(const std::wstring& text, const unsigned int& color,
 	}
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv) 
+{
+	if(argc!=2) return -1;
 	SDL_Init(SDL_INIT_EVERYTHING);
-	SDL_Window* window = SDL_CreateWindow("Test Window",
-			SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, 0);
+	SDL_Window* window = SDL_CreateWindow(	"Test Window",
+		SDL_WINDOWPOS_UNDEFINED, 
+		SDL_WINDOWPOS_UNDEFINED, 
+		WIDTH, 
+		HEIGHT, 
+		0);
 
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
 
@@ -79,20 +100,21 @@ int main(int argc, char **argv) {
 	FT_Init_FreeType(&library);
 
 	FT_Face face;
-	FT_New_Face(library, "./font/TuaTut.ttf", 0, &face);
+	FT_New_Face(library, argv[1], 0, &face);
 	FT_Set_Pixel_Sizes(face, 0, 64);
 
-	while (true) {
+	while (true) 
+	{
 		SDL_Event event;
-		if (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT)
-				break;
+		if (SDL_PollEvent(&event)) 
+		{
+			if (event.type == SDL_QUIT)	break;
 		}
 
 		SDL_SetRenderDrawColor(renderer, 0x50, 0x82, 0xaa, 0xff);
 		SDL_RenderClear(renderer);
 
-		DrawText(text, 0xffffffff, 300, 300, face, renderer);
+		DrawText(TEXT, 0xffffffff, 300, 300, face, renderer);
 
 		SDL_RenderPresent(renderer);
 		SDL_Delay(10);

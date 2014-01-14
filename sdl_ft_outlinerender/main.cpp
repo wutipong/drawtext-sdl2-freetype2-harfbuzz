@@ -1,17 +1,18 @@
 ﻿#include <iostream>
+#include <string>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H 
 
-#include <SDL.h>
-#include <SDL_main.h>
-
-#include <string>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_main.h>
 
 std::wstring text = L"ชนใดไม่มีดนตรีกาลในสันดานเป็นคนชอบกลนัก";
 
-SDL_Texture* renderTarget;
+const unsigned int WIDTH = 1280;
+const unsigned int HEIGHT = 720;
+
 FT_Library library;
 SDL_Renderer* renderer;
 
@@ -20,13 +21,10 @@ struct SpanAdditionData {
 	SDL_Color color;
 };
 
-const unsigned int WIDTH = 800;
-const unsigned int HEIGHT = 600;
-
 void DrawSpansCallback(const int y,
-	const int count,
-	const FT_Span * const spans,
-	void * const user)
+					   const int count,
+					   const FT_Span * const spans,
+					   void * const user)
 {
 	SpanAdditionData* addl = static_cast<SpanAdditionData*>(user);
 	for (int i = 0; i < count; ++i)
@@ -42,11 +40,11 @@ void DrawSpansCallback(const int y,
 }
 
 void DrawText(const std::wstring& text,
-	const SDL_Color& color,
-	const int& baseline,
-	const int& x_start,
-	const FT_Face& face,
-	SDL_Renderer*& renderer)
+			  const SDL_Color& color,
+			  const int& baseline,
+			  const int& x_start,
+			  const FT_Face& face,
+			  SDL_Renderer*& renderer)
 {
 
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -92,22 +90,20 @@ int main(int argc, char **argv)
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_TARGETTEXTURE);
 
-
 	FT_Init_FreeType(&library);
 
 	FT_Face face;
 	FT_New_Face(library, argv[1], 0, &face);
 	FT_Set_Pixel_Sizes(face, 0, 56);
 
-
-	while (true)
-	{
-		renderTarget = SDL_CreateTexture(renderer,
+	SDL_Texture* renderTarget = SDL_CreateTexture(renderer,
 			SDL_PIXELFORMAT_ABGR8888,
 			SDL_TEXTUREACCESS_TARGET,
 			WIDTH,
 			HEIGHT);
 
+	while (true)
+	{
 		SDL_Event event;
 		if (SDL_PollEvent(&event))
 		{
@@ -130,9 +126,11 @@ int main(int argc, char **argv)
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, renderTarget, NULL, NULL);
 		SDL_RenderPresent(renderer);
-		SDL_DestroyTexture(renderTarget);
+		
 		SDL_Delay(10);
 	}
+
+	SDL_DestroyTexture(renderTarget);
 
 	FT_Done_Face(face);
 	FT_Done_FreeType(library);
