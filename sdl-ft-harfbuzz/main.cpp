@@ -6,10 +6,11 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include <hb.h>
-#include <hb-ft.h>
+#include <harfbuzz/hb.h>
+#include <harfbuzz/hb-ft.h>
 
 std::wstring text = L"ปักคมมีดกรีดกลางใจ แช่เกลือใว้ให้ตายทั้งเป็น";
+
 const unsigned int WIDTH = 1280;
 const unsigned int HEIGHT = 720;
 
@@ -34,39 +35,43 @@ void DestroyFont(Font& font)
 	FT_Done_Face(font.face);
 }
 
-void CreateSurfaceFromFT_Bitmap(const FT_Bitmap& bitmap,
-								const unsigned int& color, 
-								SDL_Surface*& output) 
+SDL_Texture* CreateTextureFromFT_Bitmap(SDL_Renderer* renderer,
+										const FT_Bitmap& bitmap, 
+										const SDL_Color& color)
 {
-	output = SDL_CreateRGBSurface(0, 
-		bitmap.width, 
-		bitmap.rows, 
-		32, 
-		0x000000ff,
-		0x0000ff00, 
-		0x00ff0000, 
-		0xff000000);
+	SDL_Texture* output = SDL_CreateTexture(renderer,
+		SDL_PIXELFORMAT_RGBA8888,
+		SDL_TEXTUREACCESS_STREAMING,
+		bitmap.width,
+		bitmap.rows);
 
-	SDL_FillRect(output, NULL, color);
-
-	SDL_LockSurface(output);
+	void *buffer;
+	int pitch;
+	SDL_LockTexture(output, NULL, &buffer, &pitch);
 
 	unsigned char *src_pixels = bitmap.buffer;
-	unsigned int *target_pixels = reinterpret_cast<unsigned int*>(output->pixels);
+	unsigned int *target_pixels = reinterpret_cast<unsigned int*>(buffer);
 
-	for (int i = 0; i < bitmap.rows; i++) 
+	SDL_PixelFormat* pixel_format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
+
+	for (int y = 0; y < bitmap.rows; y++)
 	{
-		for (int j = 0; j < bitmap.width; j++) 
+		for (int x = 0; x < bitmap.width; x++)
 		{
-			unsigned int pixel = target_pixels[i * output->w + j];
-			unsigned int alpha = src_pixels[i * bitmap.pitch + j];
+			int index = (y * bitmap.width) + x;
 
-			pixel &= ((alpha << 24) | 0x00ffffff);
+			unsigned int alpha = src_pixels[index];
+			unsigned int pixel_value =
+				SDL_MapRGBA(pixel_format, color.r, color.g, color.b, alpha);
 
-			target_pixels[i * output->w + j] = pixel;
+			target_pixels[index] = pixel_value;
 		}
 	}
-	SDL_UnlockSurface(output);
+
+	SDL_FreeFormat(pixel_format);
+	SDL_UnlockTexture(output);
+
+	return output;
 }
 
 void CalculateSurfaceBound(	hb_glyph_info_t *glyph_infos,
@@ -103,7 +108,7 @@ void CalculateSurfaceBound(	hb_glyph_info_t *glyph_infos,
 }
 
 void CreateTexture(const std::wstring& text, 
-					const unsigned int& color,
+					const SDL_Color& color,
 					const Font& font, 
 					SDL_Renderer*& renderer, 
 					SDL_Texture*& target,
@@ -154,25 +159,20 @@ void CreateTexture(const std::wstring& text,
 		FT_Load_Glyph( font.face, 
 			glyph_infos[i].codepoint,
 			FT_LOAD_RENDER | flags);
-
-		SDL_Surface* surface = NULL;
-		CreateSurfaceFromFT_Bitmap(font.face->glyph->bitmap, color, surface);
-		SDL_Texture* glyph_texture = SDL_CreateTextureFromSurface(renderer,	surface);
+		
+		SDL_Texture* glyph_texture = CreateTextureFromFT_Bitmap(renderer, font.face->glyph->bitmap, color);
 
 		SDL_Rect dest;
+		SDL_QueryTexture(glyph_texture, NULL, NULL, &dest.w, &dest.h);
 		dest.x = x + (font.face->glyph->metrics.horiBearingX >> 6) + (glyph_positions[i].x_offset >> 6);
-
 		dest.y = baseline - (font.face->glyph->metrics.horiBearingY >> 6) - (glyph_positions[i].y_offset >> 6);
 
-		dest.w = surface->w;
-		dest.h = surface->h;
 
 		SDL_RenderCopy(renderer, glyph_texture, NULL, &dest);
 
 		x += (glyph_positions[i].x_advance >> 6);
 
 		SDL_DestroyTexture(glyph_texture);
-		SDL_FreeSurface(surface);
 	}
 
 	hb_buffer_destroy(buffer);
@@ -201,6 +201,10 @@ int main(int argc, char **argv)
 	CreateFont(library, argv[1], 64, font);
 
 	SDL_Rect rect, dest;
+	SDL_Color color;
+	color.r = 0xDE;
+	color.g = 0x80;
+	color.b = 0x70;
 
 	while (true) 
 	{
@@ -210,12 +214,12 @@ int main(int argc, char **argv)
 			if (event.type == SDL_QUIT)	break;
 		}
 
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_SetRenderDrawColor(renderer, 0x50, 0, 0xAA, 255);
 		SDL_RenderClear(renderer);
 
 		SDL_Texture* texture = NULL;
 		CreateTexture(text, 
-			0xffffffff, 
+			color, 
 			font, 
 			renderer, 
 			texture, 
@@ -223,9 +227,8 @@ int main(int argc, char **argv)
 			FT_LOAD_NO_HINTING);
 
 		dest = rect;
-		dest.y += 400;
-		SDL_SetRenderDrawColor(renderer, 0x50, 0x82, 0xaa, 0xff);
-		SDL_RenderFillRect(renderer, NULL);
+		dest.y = 400;
+		dest.x = 30;
 
 		SDL_RenderCopy(renderer, texture, NULL, &dest);
 

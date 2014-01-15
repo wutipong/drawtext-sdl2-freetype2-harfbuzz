@@ -8,90 +8,90 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_main.h>
 
-std::wstring text = L"ก็คงไม่เป็นไร ก็ขอให้โชคดี!!";
+const std::wstring text = L"ก็คงไม่เป็นไร ก็ขอให้โชคดี!!";
 const int WIDTH = 1280;
 const int HEIGHT = 720;
 
-void CreateSurfaceFromFT_Bitmap( const FT_Bitmap& bitmap,
-								const unsigned int& color, 
-								SDL_Surface*& output) 
+SDL_Texture* CreateTextureFromFT_Bitmap(SDL_Renderer* renderer,
+	const FT_Bitmap& bitmap,
+	const SDL_Color& color)
 {
-	output = SDL_CreateRGBSurface( 
-		0, 
-		bitmap.width, 
-		bitmap.rows, 
-		32, 
-		0x000000ff,
-		0x0000ff00, 
-		0x00ff0000, 
-		0xff000000);
+	SDL_Texture* output = SDL_CreateTexture(renderer,
+		SDL_PIXELFORMAT_RGBA8888,
+		SDL_TEXTUREACCESS_STREAMING,
+		bitmap.width,
+		bitmap.rows);
 
-	SDL_FillRect(output, NULL, color);
-
-	SDL_LockSurface(output);
+	void *buffer;
+	int pitch;
+	SDL_LockTexture(output, NULL, &buffer, &pitch);
 
 	unsigned char *src_pixels = bitmap.buffer;
-	unsigned int *target_pixels = reinterpret_cast<unsigned int*>(output->pixels);
+	unsigned int *target_pixels = reinterpret_cast<unsigned int*>(buffer);
 
-	for (int i = 0; i < bitmap.rows; i++) 
+	SDL_PixelFormat* pixel_format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA8888);
+
+	for (int y = 0; y < bitmap.rows; y++)
 	{
-		for (int j = 0; j < bitmap.width; j++) 
+		for (int x = 0; x < bitmap.width; x++)
 		{
-			unsigned int pixel = target_pixels[i * output->w + j];
-			unsigned int alpha = src_pixels[i * bitmap.pitch + j];
+			int index = (y * bitmap.width) + x;
 
-			pixel &= (alpha << 24) | 0x00ffffff;
+			unsigned int alpha = src_pixels[index];
+			unsigned int pixel_value =
+				SDL_MapRGBA(pixel_format, color.r, color.g, color.b, alpha);
 
-			target_pixels[i * output->w + j] = pixel;
+			target_pixels[index] = pixel_value;
 		}
 	}
-	SDL_UnlockSurface(output);
+
+	SDL_FreeFormat(pixel_format);
+	SDL_UnlockTexture(output);
+
+	return output;
 }
 
-void DrawGlyph(FT_Glyph glyph, 
-			   const unsigned int& color, 
-			   int&x, 
-			   const int& baseline, 
-			   SDL_Renderer* renderer)
+void DrawGlyph(FT_Glyph glyph,
+	const SDL_Color& color,
+	int&x,
+	const int& baseline,
+	SDL_Renderer* renderer)
 {
 	FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, NULL, 0);
 
-	FT_BitmapGlyph glyph_bitmap = (FT_BitmapGlyph) glyph;
-	SDL_Surface* surface = NULL;
-	CreateSurfaceFromFT_Bitmap(glyph_bitmap->bitmap, color, surface);
+	FT_BitmapGlyph glyph_bitmap = (FT_BitmapGlyph)glyph;
 
 	SDL_Texture* glyph_texture
-		= SDL_CreateTextureFromSurface(renderer, surface);
+		= CreateTextureFromFT_Bitmap(renderer, glyph_bitmap->bitmap, color);
 
 	SDL_Rect dest;
+	SDL_QueryTexture(glyph_texture, NULL, NULL, &dest.w, &dest.h);
 	dest.x = x + (glyph_bitmap->left);
-
 	dest.y = baseline - (glyph_bitmap->top);
-	dest.w = surface->w;
-	dest.h = surface->h;
+
+	SDL_SetTextureBlendMode(glyph_texture, SDL_BLENDMODE_BLEND);
 
 	SDL_RenderCopy(renderer, glyph_texture, NULL, &dest);
 
 	x += (glyph_bitmap->root.advance.x >> 16);
 
 	SDL_DestroyTexture(glyph_texture);
-	SDL_FreeSurface(surface);
 }
 
-void DrawText(const std::wstring& text, 
-			  const unsigned int& color,
-			  const int& baseline, 
-			  const int& x_start, 
-			  const FT_Face& face,
-			  const FT_Stroker& stroker, 
-			  const unsigned int& border_color,
-			  SDL_Renderer*& renderer) 
+void DrawText(const std::wstring& text,
+	const SDL_Color& color,
+	const int& baseline,
+	const int& x_start,
+	const FT_Face& face,
+	const FT_Stroker& stroker,
+	const SDL_Color& border_color,
+	SDL_Renderer*& renderer)
 {
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
 	//Pass#1 Border
 	int x = x_start;
-	for (unsigned int i = 0; i < text.length(); i++) 
+	for (unsigned int i = 0; i < text.length(); i++)
 	{
 		FT_Load_Char(face, text[i], FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING);
 
@@ -105,7 +105,7 @@ void DrawText(const std::wstring& text,
 
 	//Pass#2 Glyph
 	x = x_start;
-	for (unsigned int i = 0; i < text.length(); i++) 
+	for (unsigned int i = 0; i < text.length(); i++)
 	{
 		FT_Load_Char(face, text[i], FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING);
 
@@ -118,15 +118,15 @@ void DrawText(const std::wstring& text,
 }
 
 int main(int argc, char **argv) {
-	if(argc != 2)
+	if (argc != 2)
 		return -1;
 
 	SDL_Init(SDL_INIT_EVERYTHING);
 	SDL_Window* window = SDL_CreateWindow("Test Window",
-		SDL_WINDOWPOS_UNDEFINED, 
-		SDL_WINDOWPOS_UNDEFINED, 
-		WIDTH, 
-		HEIGHT, 
+		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED,
+		WIDTH,
+		HEIGHT,
 		0);
 
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
@@ -145,10 +145,20 @@ int main(int argc, char **argv) {
 		FT_STROKER_LINECAP_ROUND,
 		FT_STROKER_LINEJOIN_ROUND, 0);
 
-	while (true) 
+	SDL_Color border_color;
+	border_color.r = 0xEE;
+	border_color.g = 0x10;
+	border_color.b = 0xCC;
+
+	SDL_Color color;
+	color.r = 0x30;
+	color.g = 0x25;
+	color.b = 0xCC;
+
+	while (true)
 	{
 		SDL_Event event;
-		if (SDL_PollEvent(&event)) 
+		if (SDL_PollEvent(&event))
 		{
 			if (event.type == SDL_QUIT)	break;
 		}
@@ -156,13 +166,13 @@ int main(int argc, char **argv) {
 		SDL_SetRenderDrawColor(renderer, 0x50, 0x82, 0xaa, 0xff);
 		SDL_RenderClear(renderer);
 
-		DrawText(text, 
-			0xff0000ff, 
-			300, 
-			20, 
-			face, 
-			stroker, 
-			0xffffffff,
+		DrawText(text,
+			color,
+			300,
+			20,
+			face,
+			stroker,
+			border_color,
 			renderer);
 
 		SDL_RenderPresent(renderer);

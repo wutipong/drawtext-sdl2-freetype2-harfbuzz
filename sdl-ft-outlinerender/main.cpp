@@ -8,15 +8,12 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_main.h>
 
-std::wstring text = L"ชนใดไม่มีดนตรีกาลในสันดานเป็นคนชอบกลนัก";
-
+const std::wstring text = L"ชนใดไม่มีดนตรีกาลในสันดานเป็นคนชอบกลนัก";
 const unsigned int WIDTH = 1280;
 const unsigned int HEIGHT = 720;
 
-FT_Library library;
-SDL_Renderer* renderer;
-
 struct SpanAdditionData {
+	SDL_Renderer* renderer;
 	SDL_Point dest;
 	SDL_Color color;
 };
@@ -34,8 +31,8 @@ void DrawSpansCallback(const int y,
 		int x2 = x1 + spans[i].len;
 		int y2 = y1;
 
-		SDL_SetRenderDrawColor(renderer, addl->color.r, addl->color.g, addl->color.b, spans[i].coverage);
-		SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+		SDL_SetRenderDrawColor(addl->renderer, addl->color.r, addl->color.g, addl->color.b, spans[i].coverage);
+		SDL_RenderDrawLine(addl->renderer, x1, y1, x2, y2);
 	}
 }
 
@@ -43,14 +40,14 @@ void DrawText(const std::wstring& text,
 			  const SDL_Color& color,
 			  const int& baseline,
 			  const int& x_start,
+			  const FT_Library& library,
 			  const FT_Face& face,
-			  SDL_Renderer*& renderer)
+			  SDL_Renderer* renderer)
 {
 
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
 	int x = x_start;
-	SDL_SetRenderDrawColor(renderer, 0xff, 0, 0, 0xff);
 
 	SpanAdditionData addl;
 	addl.color = color;
@@ -60,6 +57,7 @@ void DrawText(const std::wstring& text,
 		FT_Load_Char(face, text[i], FT_LOAD_NO_BITMAP);
 		addl.dest.x = x;
 		addl.dest.y = baseline;
+		addl.renderer = renderer;
 
 		if (face->glyph->format == FT_GLYPH_FORMAT_OUTLINE)
 		{
@@ -87,9 +85,9 @@ int main(int argc, char **argv)
 		WIDTH,
 		HEIGHT,
 		0);
-
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE | SDL_RENDERER_TARGETTEXTURE);
-
+	
+	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_TARGETTEXTURE);
+	FT_Library library;
 	FT_Init_FreeType(&library);
 
 	FT_Face face;
@@ -120,7 +118,7 @@ int main(int argc, char **argv)
 		color.b = 0xb0;
 		color.a = 0xff;
 
-		DrawText(text, color, 300, 120, face, renderer);
+		DrawText(text, color, 300, 120, library, face, renderer);
 
 		SDL_SetRenderTarget(renderer, NULL);
 		SDL_RenderClear(renderer);
