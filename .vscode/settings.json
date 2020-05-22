@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "random": "cpp",
+        "istream": "cpp",
+        "ostream": "cpp",
+        "streambuf": "cpp"
+    }
+}
