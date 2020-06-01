@@ -1,0 +1,6 @@
+[submodule "imgui_sdl"]
+	path = imgui_sdl
+	url = https://github.com/Tyyppi77/imgui_sdl
+[submodule "Sarabun"]
+	path = Sarabun
+	url = https://github.com/cadsondemak/Sarabun.git

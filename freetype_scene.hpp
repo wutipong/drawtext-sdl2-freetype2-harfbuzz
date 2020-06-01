@@ -1,0 +1,31 @@
+﻿#ifndef FREETYPE_SCENE_HPP
+#define FREETYPE_SCENE_HPP
+
+#include <SDL2/SDL.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include <string>
+
+#include "scene.hpp"
+
+class FreeTypeScene : public Scene {
+public:
+  virtual bool Init(SDL_Renderer *renderer);
+  virtual void Tick(SDL_Renderer *renderer);
+  virtual void Cleanup(SDL_Renderer *renderer);
+
+private:
+  static SDL_Texture *CreateTextureFromFT_Bitmap(SDL_Renderer *renderer,
+                                                 const FT_Bitmap &bitmap,
+                                                 const SDL_Color &color);
+
+  static void DrawText(const std::wstring &text, const SDL_Color &color,
+                       const int &baseline, const int &x_start,
+                       const FT_Face &face, SDL_Renderer *renderer);
+
+  const std::wstring TEXT = L"เก็บใจ เก็บไว้มานาน เก็บมันคล้าย ๆ รอใคร";
+  const char* FONT = "Sarabun-Regular.ttf";
+  FT_Face face;
+};
+
+#endif

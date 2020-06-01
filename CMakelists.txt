@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 3.17)
+
+# set the project name
+project(sdl-ft)
+
+# add the executable
+add_executable(main 
+	main.cpp 
+	scene.hpp
+	imgui_sdl/imgui_sdl.h
+	imgui_sdl/imgui_sdl.cpp "imgui_impl_sdl.cpp" "imgui_impl_sdl.h"  "menu_scene.hpp" "menu_scene.cpp" "freetype_scene.hpp" "freetype_scene.cpp" "scene.cpp")
+
+find_package(freetype CONFIG REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
+find_package(imgui CONFIG REQUIRED)
+
+target_include_directories(main PRIVATE ${SDL2_INCLUDE_DIRS})
+target_link_libraries(main PRIVATE SDL2::SDL2 SDL2::SDL2main imgui::imgui freetype)
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Sarabun/fonts/Sarabun-Regular.ttf
+     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
