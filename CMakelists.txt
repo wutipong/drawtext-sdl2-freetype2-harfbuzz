@@ -8,7 +8,7 @@ add_executable(main
 	main.cpp 
 	scene.hpp
 	imgui_sdl/imgui_sdl.h
-	imgui_sdl/imgui_sdl.cpp "imgui_impl_sdl.cpp" "imgui_impl_sdl.h"  "menu_scene.hpp" "menu_scene.cpp" "freetype_scene.hpp" "freetype_scene.cpp" "scene.cpp")
+	imgui_sdl/imgui_sdl.cpp "imgui_impl_sdl.cpp" "imgui_impl_sdl.h"  "menu_scene.hpp" "menu_scene.cpp" "freetype_scene.hpp" "freetype_scene.cpp" "scene.cpp" "freetype_stroke_scene.hpp" "freetype_stroke_scene.cpp")
 
 find_package(freetype CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
