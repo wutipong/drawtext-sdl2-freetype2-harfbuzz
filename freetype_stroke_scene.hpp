@@ -16,17 +16,15 @@ public:
   virtual void Cleanup(SDL_Renderer *renderer);
 
 private:
-  static SDL_Texture *CreateTextureFromFT_Bitmap(SDL_Renderer *renderer,
-                                                 const FT_Bitmap &bitmap,
-                                                 const SDL_Color &color);
+  static void DrawText(const std::wstring &text, const SDL_Color &color,
+                       const int &baseline, const int &x_start,
+                       const FT_Face &face, const FT_Stroker &stroker,
+                       const SDL_Color &border_color, SDL_Renderer *&renderer);
 
-  static void DrawText(const std::wstring& text, const SDL_Color& color,
-      const int& baseline, const int& x_start, const FT_Face& face,
-      const FT_Stroker& stroker, const SDL_Color& border_color,
-      SDL_Renderer*& renderer);
-
-  static void FreeTypeStrokeScene::DrawGlyph(FT_Glyph glyph, const SDL_Color& color, int& x,
-      const int& baseline, SDL_Renderer* renderer);
+  static void FreeTypeStrokeScene::DrawGlyph(FT_Glyph glyph,
+                                             const SDL_Color &color, int &x,
+                                             const int &baseline,
+                                             SDL_Renderer *renderer);
 
   const std::wstring TEXT = L"เก็บใจ เก็บไว้มานาน เก็บมันคล้าย ๆ รอใคร";
   const char *FONT = "Sarabun-Regular.ttf";

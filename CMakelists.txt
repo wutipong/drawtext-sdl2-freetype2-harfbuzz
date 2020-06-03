@@ -12,7 +12,8 @@ add_executable(main
 	"menu_scene.hpp" "menu_scene.cpp" 
 	"freetype_scene.hpp" "freetype_scene.cpp" 
 	"freetype_stroke_scene.hpp" "freetype_stroke_scene.cpp" 
-	"freetype_harfbuzz_scene.hpp" "freetype_harfbuzz_scene.cpp")
+	"freetype_harfbuzz_scene.hpp" "freetype_harfbuzz_scene.cpp"
+	"texture.hpp" "texture.cpp")
 
 find_package(freetype CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)

@@ -19,10 +19,6 @@ public:
   virtual void Cleanup(SDL_Renderer *renderer);
 
 private:
-  static SDL_Texture *CreateTextureFromFT_Bitmap(SDL_Renderer *renderer,
-                                                 const FT_Bitmap &bitmap,
-                                                 const SDL_Color &color);
-
   static void DrawText(const std::wstring &text, const SDL_Color &color,
                        const int &baseline, const int &x_start,
                        const FT_Face &face, hb_font_t *hb_font,
