@@ -16,25 +16,25 @@ bool FreeTypeScene::Init(SDL_Renderer *renderer) {
   if (error)
     return false;
 
-  std::fill(std::begin(buffer), std::end(buffer), 0);
-  std::copy(TEXT.begin(), TEXT.end(), std::begin(buffer));
+  buffer.resize(bufferSize);
+  std::copy(TEXT.begin(), TEXT.end(), buffer.begin());
 
   return true;
 }
 
 void FreeTypeScene::Tick(SDL_Renderer *renderer) {
   ImGui::Begin("Menu");
-  if (ImGui::Button("Back")) {
-    ImGui::End();
+  ImGui::InputText("text", buffer.data(), bufferSize);
+  ImGui::SliderInt("font size", &fontSize, 0, 128);
+  bool quit = ImGui::Button("Back");
+
+  ImGui::End();
+
+  if (quit) {
     ChangeScene<MenuScene>(renderer);
 
     return;
   }
-
-  ImGui::InputText("text", buffer, bufferSize);
-
-  ImGui::SliderInt("font size", &fontSize, 0, 128);
-  ImGui::End();
 
   SDL_Color color;
   color.r = 0x80;
@@ -44,8 +44,7 @@ void FreeTypeScene::Tick(SDL_Renderer *renderer) {
   FT_Set_Pixel_Sizes(face, 0, fontSize);
 
   std::wstring text;
-  utf8::utf8to16(std::begin(buffer), std::end(buffer),
-                 std::back_inserter(text));
+  utf8::utf8to16(buffer.begin(), buffer.end(), std::back_inserter(text));
 
   DrawText(text, color, 300, 300, face, renderer);
 }
