@@ -15,8 +15,7 @@ int main(int argc, char **argv) {
       SDL_CreateWindow("Test Window", SDL_WINDOWPOS_UNDEFINED,
                        SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, 0);
   SDL_Renderer *renderer;
-  renderer = SDL_CreateRenderer(
-      window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+  renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
 
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
