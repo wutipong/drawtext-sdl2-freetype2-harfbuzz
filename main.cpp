@@ -19,6 +19,10 @@ int main(int argc, char **argv) {
       window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
 
   ImGui::CreateContext();
+  ImGuiIO &io = ImGui::GetIO();
+  io.Fonts->AddFontFromFileTTF("Sarabun-Regular.ttf", 20.0f, NULL,
+                               io.Fonts->GetGlyphRangesThai());
+
   ImGuiSDL::Initialize(renderer, WIDTH, HEIGHT);
   ImGui_ImplSDL2_Init(window);
 

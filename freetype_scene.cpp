@@ -25,6 +25,11 @@ void FreeTypeScene::Tick(SDL_Renderer *renderer) {
     return;
   }
 
+  constexpr size_t bufferSize = 100;
+  char buffer[bufferSize];
+  memset(buffer, 0, bufferSize);
+  ImGui::InputText("text", buffer, bufferSize);
+
   ImGui::SliderInt("font size", &fontSize, 0, 128);
   ImGui::End();
 
