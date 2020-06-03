@@ -19,6 +19,8 @@ bool FreeTypeScene::Init(SDL_Renderer *renderer) {
   buffer.resize(bufferSize);
   std::copy(TEXT.begin(), TEXT.end(), buffer.begin());
 
+  color = {128, 128, 128, 255};
+
   return true;
 }
 
@@ -26,6 +28,14 @@ void FreeTypeScene::Tick(SDL_Renderer *renderer) {
   ImGui::Begin("Menu");
   ImGui::InputText("text", buffer.data(), bufferSize);
   ImGui::SliderInt("font size", &fontSize, 0, 128);
+  
+  float c[4] {color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, 1.0};
+
+  ImGui::ColorPicker4("color", c, ImGuiColorEditFlags_InputRGB);
+  color.r = c[0] * 255;
+  color.g = c[1] * 255;
+  color.b = c[2] * 255;
+
   bool quit = ImGui::Button("Back");
 
   ImGui::End();
@@ -36,10 +46,7 @@ void FreeTypeScene::Tick(SDL_Renderer *renderer) {
     return;
   }
 
-  SDL_Color color;
-  color.r = 0x80;
-  color.g = 0xff;
-  color.b = 0xaa;
+
 
   FT_Set_Pixel_Sizes(face, 0, fontSize);
 

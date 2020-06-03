@@ -23,9 +23,11 @@ private:
   const char *FONT = "Sarabun-Regular.ttf";
   FT_Face face;
   int fontSize = 64;
+  SDL_Color color;
 
   std::vector<char> buffer;
   static constexpr size_t bufferSize = 256;
+
 };
 
 #endif
