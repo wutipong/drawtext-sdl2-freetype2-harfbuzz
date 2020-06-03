@@ -19,10 +19,13 @@ private:
                        const int &baseline, const int &x_start,
                        const FT_Face &face, SDL_Renderer *renderer);
 
-  const std::wstring TEXT = L"เก็บใจ เก็บไว้มานาน เก็บมันคล้าย ๆ รอใคร";
+  const std::string TEXT = "Test";
   const char *FONT = "Sarabun-Regular.ttf";
   FT_Face face;
-  int fontSize;
+  int fontSize = 64;
+
+  static constexpr size_t bufferSize = 256;
+  char buffer[bufferSize];
 };
 
 #endif
