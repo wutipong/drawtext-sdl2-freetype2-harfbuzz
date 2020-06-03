@@ -28,8 +28,8 @@ void FreeTypeScene::Tick(SDL_Renderer *renderer) {
   ImGui::Begin("Menu");
   ImGui::InputText("text", buffer.data(), bufferSize);
   ImGui::SliderInt("font size", &fontSize, 0, 128);
-  
-  float c[4] {color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, 1.0};
+
+  float c[4]{color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, 1.0};
 
   ImGui::ColorPicker4("color", c, ImGuiColorEditFlags_InputRGB);
   color.r = c[0] * 255;
@@ -45,8 +45,6 @@ void FreeTypeScene::Tick(SDL_Renderer *renderer) {
 
     return;
   }
-
-
 
   FT_Set_Pixel_Sizes(face, 0, fontSize);
 

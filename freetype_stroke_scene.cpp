@@ -1,6 +1,7 @@
 #include "freetype_stroke_scene.hpp"
 
 #include <imgui.h>
+#include <utf8.h>
 
 #include "menu_scene.hpp"
 #include "texture.hpp"
@@ -13,36 +14,56 @@ bool FreeTypeStrokeScene::Init(SDL_Renderer *renderer) {
   if (error)
     return false;
 
-  FT_Set_Pixel_Sizes(face, 0, 64);
-
   FT_Stroker_New(library, &stroker);
-  FT_Stroker_Set(stroker, 2 << 6, FT_STROKER_LINECAP_ROUND,
-                 FT_STROKER_LINEJOIN_ROUND, 0);
+
+  buffer.resize(bufferSize);
+  std::copy(TEXT.begin(), TEXT.end(), buffer.begin());
 
   return true;
 }
 
 void FreeTypeStrokeScene::Tick(SDL_Renderer *renderer) {
   ImGui::Begin("Menu");
-  if (ImGui::Button("Back")) {
-    ImGui::End();
+
+  ImGui::InputText("text", buffer.data(), bufferSize);
+  ImGui::SliderInt("font size", &fontSize, 0, 128);
+
+  float c[3]{color.r / 255.0f, color.g / 255.0f, color.b / 255.0f};
+
+  ImGui::ColorEdit3("color", c);
+  color.r = c[0] * 255;
+  color.g = c[1] * 255;
+  color.b = c[2] * 255;
+
+  ImGui::SliderInt("border size", &borderSize, 1, 10);
+
+  c[0] = border_color.r / 255.0f;
+  c[1] = border_color.g / 255.0f;
+  c[2] = border_color.b / 255.0f;
+
+  ImGui::ColorEdit3("border color", c, ImGuiColorEditFlags_InputRGB);
+  border_color.r = c[0] * 255;
+  border_color.g = c[1] * 255;
+  border_color.b = c[2] * 255;
+
+  bool quit = ImGui::Button("Back");
+
+  ImGui::End();
+
+  if (quit) {
     ChangeScene<MenuScene>(renderer);
 
     return;
   }
-  ImGui::End();
 
-  SDL_Color color;
-  color.r = 0x80;
-  color.g = 0xff;
-  color.b = 0xaa;
+  FT_Set_Pixel_Sizes(face, 0, fontSize);
+  FT_Stroker_Set(stroker, borderSize << 6, FT_STROKER_LINECAP_ROUND,
+                 FT_STROKER_LINEJOIN_ROUND, 0);
 
-  SDL_Color border_color;
-  border_color.r = 0xEE;
-  border_color.g = 0x10;
-  border_color.b = 0xCC;
+  std::wstring text;
+  utf8::utf8to16(buffer.begin(), buffer.end(), std::back_inserter(text));
 
-  DrawText(TEXT, color, 300, 300, face, stroker, border_color, renderer);
+  DrawText(text, color, 300, 300, face, stroker, border_color, renderer);
 }
 
 void FreeTypeStrokeScene::Cleanup(SDL_Renderer *renderer) {

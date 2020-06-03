@@ -6,6 +6,7 @@
 #include FT_FREETYPE_H
 #include FT_STROKER_H
 #include <string>
+#include <vector>
 
 #include "scene.hpp"
 
@@ -26,10 +27,20 @@ private:
                                              const int &baseline,
                                              SDL_Renderer *renderer);
 
-  const std::wstring TEXT = L"เก็บใจ เก็บไว้มานาน เก็บมันคล้าย ๆ รอใคร";
+  const std::string TEXT = "Test";
   const char *FONT = "Sarabun-Regular.ttf";
+
   FT_Face face;
   FT_Stroker stroker;
+
+  int fontSize = 64;
+  SDL_Color color = {0, 0, 0, 255};
+
+  int borderSize = 2;
+  SDL_Color border_color = { 0xEE, 0x10, 0xCC};
+
+  std::vector<char> buffer;
+  static constexpr size_t bufferSize = 256;
 };
 
 #endif

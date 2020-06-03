@@ -4,9 +4,9 @@
 #include <SDL2/SDL.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include "scene.hpp"
 #include <string>
 #include <vector>
-#include "scene.hpp"
 
 class FreeTypeScene : public Scene {
 public:
@@ -27,7 +27,6 @@ private:
 
   std::vector<char> buffer;
   static constexpr size_t bufferSize = 256;
-
 };
 
 #endif
