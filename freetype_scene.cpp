@@ -8,23 +8,18 @@
 #include "texture.hpp"
 #include <utf8.h>
 
-static FT_Library library;
-
-bool FreeTypeScene::Init(SDL_Renderer *renderer) {
-  FT_Init_FreeType(&library);
-  auto error = FT_New_Face(library, FONT, 0, &face);
+bool FreeTypeScene::Init(const Context &context) {
+  auto error = FT_New_Face(context.ftLibrary, FONT, 0, &face);
   if (error)
     return false;
 
   buffer.resize(bufferSize);
   std::copy(TEXT.begin(), TEXT.end(), buffer.begin());
 
-  color = {0, 0, 0, 255};
-
   return true;
 }
 
-void FreeTypeScene::Tick(SDL_Renderer *renderer) {
+void FreeTypeScene::Tick(const Context &context) {
   ImGui::Begin("Menu");
   ImGui::InputText("text", buffer.data(), bufferSize);
   ImGui::SliderInt("font size", &fontSize, 0, 128);
@@ -41,7 +36,7 @@ void FreeTypeScene::Tick(SDL_Renderer *renderer) {
   ImGui::End();
 
   if (quit) {
-    ChangeScene<MenuScene>(renderer);
+    ChangeScene<MenuScene>(context);
 
     return;
   }
@@ -51,10 +46,10 @@ void FreeTypeScene::Tick(SDL_Renderer *renderer) {
   std::wstring text;
   utf8::utf8to16(buffer.begin(), buffer.end(), std::back_inserter(text));
 
-  DrawText(text, color, 300, 300, face, renderer);
+  DrawText(text, color, 300, 300, face, context.renderer);
 }
 
-void FreeTypeScene::Cleanup(SDL_Renderer *renderer) { FT_Done_Face(face); }
+void FreeTypeScene::Cleanup(const Context &context) { FT_Done_Face(face); }
 
 void FreeTypeScene::DrawText(const std::wstring &text, const SDL_Color &color,
                              const int &baseline, const int &x_start,

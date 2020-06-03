@@ -12,23 +12,18 @@
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
 
-static FT_Library library;
-
-bool FreeTypeOutlineScene::Init(SDL_Renderer *renderer) {
-  FT_Init_FreeType(&library);
-  auto error = FT_New_Face(library, FONT, 0, &face);
+bool FreeTypeOutlineScene::Init(const Context &context) {
+  auto error = FT_New_Face(context.ftLibrary, FONT, 0, &face);
   if (error)
     return false;
 
   buffer.resize(bufferSize);
   std::copy(TEXT.begin(), TEXT.end(), buffer.begin());
 
-  color = {0, 0, 0, 255};
-
   return true;
 }
 
-void FreeTypeOutlineScene::Tick(SDL_Renderer *renderer) {
+void FreeTypeOutlineScene::Tick(const Context &context) {
   ImGui::Begin("Menu");
   ImGui::InputText("text", buffer.data(), bufferSize);
   ImGui::SliderInt("font size", &fontSize, 0, 128);
@@ -45,7 +40,7 @@ void FreeTypeOutlineScene::Tick(SDL_Renderer *renderer) {
   ImGui::End();
 
   if (quit) {
-    ChangeScene<MenuScene>(renderer);
+    ChangeScene<MenuScene>(context);
 
     return;
   }
@@ -55,10 +50,10 @@ void FreeTypeOutlineScene::Tick(SDL_Renderer *renderer) {
   std::wstring text;
   utf8::utf8to16(buffer.begin(), buffer.end(), std::back_inserter(text));
 
-  DrawText(text, color, 300, 300, face, renderer);
+  DrawText(text, color, 300, 300, face, context);
 }
 
-void FreeTypeOutlineScene::Cleanup(SDL_Renderer *renderer) {
+void FreeTypeOutlineScene::Cleanup(const Context &context) {
   FT_Done_Face(face);
 }
 
@@ -82,7 +77,7 @@ void FreeTypeOutlineScene::DrawSpansCallback(const int y, const int count,
 void FreeTypeOutlineScene::DrawText(const std::wstring &text,
                                     const SDL_Color &color, const int &baseline,
                                     const int &x_start, const FT_Face &face,
-                                    SDL_Renderer *renderer) {
+                                    const Context &context) {
   int x = x_start;
 
   SpanAdditionData addl;
@@ -92,7 +87,7 @@ void FreeTypeOutlineScene::DrawText(const std::wstring &text,
     FT_Load_Char(face, text[i], FT_LOAD_NO_BITMAP | FT_LOAD_NO_HINTING);
     addl.dest.x = x;
     addl.dest.y = baseline;
-    addl.renderer = renderer;
+    addl.renderer = context.renderer;
 
     if (face->glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
       FT_Raster_Params params;
@@ -101,7 +96,7 @@ void FreeTypeOutlineScene::DrawText(const std::wstring &text,
       params.gray_spans = DrawSpansCallback;
       params.user = &addl;
 
-      FT_Outline_Render(library, &face->glyph->outline, &params);
+      FT_Outline_Render(context.ftLibrary, &face->glyph->outline, &params);
     } // No fallback
     x += (face->glyph->metrics.horiAdvance >> 6);
   }

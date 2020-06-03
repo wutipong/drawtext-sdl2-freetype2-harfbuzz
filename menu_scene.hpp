@@ -6,9 +6,9 @@
 
 class MenuScene : public Scene {
 public:
-  virtual bool Init(SDL_Renderer *renderer);
-  virtual void Tick(SDL_Renderer *renderer);
-  virtual void Cleanup(SDL_Renderer *renderer);
+  virtual bool Init(const Context &context);
+  virtual void Tick(const Context &context);
+  virtual void Cleanup(const Context &context);
 };
 
 #endif

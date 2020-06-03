@@ -6,11 +6,10 @@
 #include "menu_scene.hpp"
 #include "texture.hpp"
 
-static FT_Library library;
 
-bool FreeTypeHarfbuzzScene::Init(SDL_Renderer *renderer) {
-  FT_Init_FreeType(&library);
-  auto error = FT_New_Face(library, FONT, 0, &face);
+
+bool FreeTypeHarfbuzzScene::Init(const Context &context) {
+  auto error = FT_New_Face(context.ftLibrary, FONT, 0, &face);
   if (error)
     return false;
 
@@ -25,7 +24,7 @@ bool FreeTypeHarfbuzzScene::Init(SDL_Renderer *renderer) {
   return true;
 }
 
-void FreeTypeHarfbuzzScene::Tick(SDL_Renderer *renderer) {
+void FreeTypeHarfbuzzScene::Tick(const Context &context) {
   ImGui::Begin("Menu");
   ImGui::InputText("text", buffer.data(), bufferSize);
   ImGui::SliderInt("font size", &fontSize, 0, 128);
@@ -42,7 +41,7 @@ void FreeTypeHarfbuzzScene::Tick(SDL_Renderer *renderer) {
   ImGui::End();
 
   if (quit) {
-    ChangeScene<MenuScene>(renderer);
+    ChangeScene<MenuScene>(context);
 
     return;
   }
@@ -52,10 +51,10 @@ void FreeTypeHarfbuzzScene::Tick(SDL_Renderer *renderer) {
   std::wstring text;
   utf8::utf8to16(buffer.begin(), buffer.end(), std::back_inserter(text));
 
-  DrawText(text, color, 300, 300, face, hb_font, renderer);
+  DrawText(text, color, 300, 300, face, hb_font, context.renderer);
 }
 
-void FreeTypeHarfbuzzScene::Cleanup(SDL_Renderer *renderer) {
+void FreeTypeHarfbuzzScene::Cleanup(const Context &context) {
   hb_font_destroy(hb_font);
   FT_Done_Face(face);
 }

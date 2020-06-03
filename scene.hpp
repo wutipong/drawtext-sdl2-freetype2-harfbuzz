@@ -4,27 +4,29 @@
 #include <SDL2/SDL.h>
 #include <memory>
 
+#include "context.hpp"
+
 class Scene {
 public:
-  virtual bool Init(SDL_Renderer *renderer) = 0;
-  virtual void Tick(SDL_Renderer *renderer) = 0;
-  virtual void Cleanup(SDL_Renderer *renderer) = 0;
+  virtual bool Init(const Context& context) = 0;
+  virtual void Tick(const Context &context) = 0;
+  virtual void Cleanup(const Context &context) = 0;
 
-  static void TickCurrent(SDL_Renderer *renderer);
-  template <class T> static void ChangeScene(SDL_Renderer* renderer);
+  static void TickCurrent(const Context &context);
+  template <class T> static void ChangeScene(const Context &context);
 
 private:
   static std::unique_ptr<Scene> currentScene;
 };
 
 template <class T> 
-void Scene::ChangeScene(SDL_Renderer* renderer) {
+void Scene::ChangeScene(const Context &context) {
 	auto newScene = std::make_unique<T>();
 	
-	if (!newScene->Init(renderer))
+	if (!newScene->Init(context))
 		return;
 
-	currentScene->Cleanup(renderer);
+	currentScene->Cleanup(context);
 	currentScene = std::move(newScene);
 }
 

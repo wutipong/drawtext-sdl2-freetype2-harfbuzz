@@ -5,6 +5,7 @@
 #include "imgui_sdl/imgui_sdl.h"
 #include "menu_scene.hpp"
 #include "scene.hpp"
+#include "context.hpp"
 
 constexpr int WIDTH = 1280;
 constexpr int HEIGHT = 720;
@@ -25,6 +26,9 @@ int main(int argc, char **argv) {
   ImGuiSDL::Initialize(renderer, WIDTH, HEIGHT);
   ImGui_ImplSDL2_Init(window);
 
+  Context c{renderer, nullptr};
+  FT_Init_FreeType(&c.ftLibrary);
+
   while (true) {
     SDL_Event event;
     if (SDL_PollEvent(&event)) {
@@ -38,7 +42,7 @@ int main(int argc, char **argv) {
 
     ImGui::NewFrame();
 
-    Scene::TickCurrent(renderer);
+    Scene::TickCurrent(c);
 
     ImGui_ImplSDL2_UpdateMousePosAndButtons();
     ImGui_ImplSDL2_UpdateMouseCursor();
@@ -54,6 +58,8 @@ int main(int argc, char **argv) {
   ImGui_ImplSDL2_Shutdown();
   ImGuiSDL::Deinitialize();
   ImGui::DestroyContext();
+
+  FT_Done_FreeType(c.ftLibrary);
 
   SDL_DestroyWindow(window);
   SDL_Quit();

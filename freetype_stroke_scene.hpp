@@ -12,15 +12,15 @@
 
 class FreeTypeStrokeScene : public Scene {
 public:
-  virtual bool Init(SDL_Renderer *renderer);
-  virtual void Tick(SDL_Renderer *renderer);
-  virtual void Cleanup(SDL_Renderer *renderer);
+  virtual bool Init(const Context &context);
+  virtual void Tick(const Context &context);
+  virtual void Cleanup(const Context &context);
 
 private:
   static void DrawText(const std::wstring &text, const SDL_Color &color,
                        const int &baseline, const int &x_start,
                        const FT_Face &face, const FT_Stroker &stroker,
-                       const SDL_Color &border_color, SDL_Renderer *&renderer);
+                       const SDL_Color &border_color, SDL_Renderer *renderer);
 
   static void FreeTypeStrokeScene::DrawGlyph(FT_Glyph glyph,
                                              const SDL_Color &color, int &x,
@@ -37,7 +37,7 @@ private:
   SDL_Color color = {0, 0, 0, 255};
 
   int borderSize = 2;
-  SDL_Color border_color = { 0xEE, 0x10, 0xCC};
+  SDL_Color border_color = {0xEE, 0x10, 0xCC};
 
   std::vector<char> buffer;
   static constexpr size_t bufferSize = 256;

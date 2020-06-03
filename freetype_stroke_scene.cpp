@@ -8,7 +8,7 @@
 
 static FT_Library library;
 
-bool FreeTypeStrokeScene::Init(SDL_Renderer *renderer) {
+bool FreeTypeStrokeScene::Init(const Context &context) {
   FT_Init_FreeType(&library);
   auto error = FT_New_Face(library, FONT, 0, &face);
   if (error)
@@ -22,7 +22,7 @@ bool FreeTypeStrokeScene::Init(SDL_Renderer *renderer) {
   return true;
 }
 
-void FreeTypeStrokeScene::Tick(SDL_Renderer *renderer) {
+void FreeTypeStrokeScene::Tick(const Context &context) {
   ImGui::Begin("Menu");
 
   ImGui::InputText("text", buffer.data(), bufferSize);
@@ -51,7 +51,7 @@ void FreeTypeStrokeScene::Tick(SDL_Renderer *renderer) {
   ImGui::End();
 
   if (quit) {
-    ChangeScene<MenuScene>(renderer);
+    ChangeScene<MenuScene>(context);
 
     return;
   }
@@ -63,10 +63,11 @@ void FreeTypeStrokeScene::Tick(SDL_Renderer *renderer) {
   std::wstring text;
   utf8::utf8to16(buffer.begin(), buffer.end(), std::back_inserter(text));
 
-  DrawText(text, color, 300, 300, face, stroker, border_color, renderer);
+  DrawText(text, color, 300, 300, face, stroker, border_color,
+           context.renderer);
 }
 
-void FreeTypeStrokeScene::Cleanup(SDL_Renderer *renderer) {
+void FreeTypeStrokeScene::Cleanup(const Context &context) {
   FT_Stroker_Done(stroker);
   FT_Done_Face(face);
 }
@@ -100,7 +101,7 @@ void FreeTypeStrokeScene::DrawText(const std::wstring &text,
                                    const int &x_start, const FT_Face &face,
                                    const FT_Stroker &stroker,
                                    const SDL_Color &border_color,
-                                   SDL_Renderer *&renderer) {
+                                   SDL_Renderer *renderer) {
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
   // Pass#1 Border
