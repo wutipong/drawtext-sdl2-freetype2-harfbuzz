@@ -13,8 +13,6 @@ bool FreeTypeScene::Init(SDL_Renderer *renderer) {
   if (error)
     return false;
 
-  FT_Set_Pixel_Sizes(face, 0, 64);
-
   return true;
 }
 
@@ -26,6 +24,8 @@ void FreeTypeScene::Tick(SDL_Renderer *renderer) {
 
     return;
   }
+
+  ImGui::SliderInt("font size", &fontSize, 0, 128);
   ImGui::End();
 
   SDL_Color color;
@@ -33,6 +33,7 @@ void FreeTypeScene::Tick(SDL_Renderer *renderer) {
   color.g = 0xff;
   color.b = 0xaa;
 
+  FT_Set_Pixel_Sizes(face, 0, fontSize);
   DrawText(TEXT, color, 300, 300, face, renderer);
 }
 

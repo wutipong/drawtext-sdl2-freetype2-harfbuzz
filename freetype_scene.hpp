@@ -20,8 +20,9 @@ private:
                        const FT_Face &face, SDL_Renderer *renderer);
 
   const std::wstring TEXT = L"เก็บใจ เก็บไว้มานาน เก็บมันคล้าย ๆ รอใคร";
-  const char* FONT = "Sarabun-Regular.ttf";
+  const char *FONT = "Sarabun-Regular.ttf";
   FT_Face face;
+  int fontSize;
 };
 
 #endif
