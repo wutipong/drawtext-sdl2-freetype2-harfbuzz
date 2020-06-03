@@ -1,12 +1,12 @@
 #include "freetype_harfbuzz_scene.hpp"
 
+#include <vector>
+
 #include <imgui.h>
 #include <utf8.h>
 
 #include "menu_scene.hpp"
 #include "texture.hpp"
-
-
 
 bool FreeTypeHarfbuzzScene::Init(const Context &context) {
   auto error = FT_New_Face(context.ftLibrary, FONT, 0, &face);
@@ -16,10 +16,9 @@ bool FreeTypeHarfbuzzScene::Init(const Context &context) {
   FT_Set_Pixel_Sizes(face, 0, 64);
   hb_font = hb_ft_font_create(face, 0);
 
-  buffer.resize(bufferSize);
-  std::copy(TEXT.begin(), TEXT.end(), buffer.begin());
 
-  color = {0, 0, 0, 255};
+  std::fill(buffer.begin(), buffer.end(), 0);
+  std::copy(std::begin(TEXT), std::end(TEXT), buffer.begin());
 
   return true;
 }
@@ -47,13 +46,9 @@ void FreeTypeHarfbuzzScene::Tick(const Context &context) {
   }
 
   FT_Set_Pixel_Sizes(face, 0, fontSize);
-
-  std::wstring text;
-  utf8::utf8to16(buffer.begin(), buffer.end(), std::back_inserter(text));
-
   hb_ft_font_changed(hb_font);
-  
-  DrawText(text, color, 300, 300, face, hb_font, context.renderer);
+
+  DrawText(buffer, color, 300, 300, face, hb_font, context.renderer);
 }
 
 void FreeTypeHarfbuzzScene::Cleanup(const Context &context) {
@@ -61,7 +56,7 @@ void FreeTypeHarfbuzzScene::Cleanup(const Context &context) {
   FT_Done_Face(face);
 }
 
-void FreeTypeHarfbuzzScene::DrawText(const std::wstring &text,
+void FreeTypeHarfbuzzScene::DrawText(const std::array<char, bufferSize> &text,
                                      const SDL_Color &color,
                                      const int &baseline, const int &x_start,
                                      const FT_Face &face, hb_font_t *hb_font,
@@ -71,8 +66,12 @@ void FreeTypeHarfbuzzScene::DrawText(const std::wstring &text,
   hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
   hb_buffer_set_script(buffer, HB_SCRIPT_THAI);
 
-  hb_buffer_add_utf16(buffer, (unsigned short *)(text.c_str()), text.length(),
-                      0, text.length());
+  std::vector<uint16_t> charactors;
+  auto end_it = utf8::find_invalid(text.begin(), text.end());
+  utf8::utf8to16(text.begin(), end_it, std::back_inserter(charactors));
+
+  hb_buffer_add_utf16(buffer, charactors.data(), charactors.size(), 0,
+                      charactors.size());
 
   hb_shape(hb_font, buffer, NULL, 0);
 

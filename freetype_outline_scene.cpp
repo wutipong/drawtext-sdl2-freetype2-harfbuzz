@@ -1,12 +1,13 @@
 #include "freetype_outline_scene.hpp"
 
 #include <algorithm>
-#include <codecvt>
+#include <array>
 #include <imgui.h>
 
 #include "menu_scene.hpp"
 #include "texture.hpp"
 #include <utf8.h>
+#include <vector>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -16,14 +17,13 @@ bool FreeTypeOutlineScene::Init(const Context &context) {
   auto error = FT_New_Face(context.ftLibrary, FONT, 0, &face);
   if (error)
     return false;
-
-  buffer.resize(bufferSize);
-  std::copy(TEXT.begin(), TEXT.end(), buffer.begin());
-
+  std::fill(buffer.begin(), buffer.end(), 0);
+  std::copy(std::begin(TEXT), std::end(TEXT), std::begin(buffer));
   return true;
 }
 
 void FreeTypeOutlineScene::Tick(const Context &context) {
+
   ImGui::Begin("Menu");
   ImGui::InputText("text", buffer.data(), bufferSize);
   ImGui::SliderInt("font size", &fontSize, 0, 128);
@@ -47,10 +47,7 @@ void FreeTypeOutlineScene::Tick(const Context &context) {
 
   FT_Set_Pixel_Sizes(face, 0, fontSize);
 
-  std::wstring text;
-  utf8::utf8to16(buffer.begin(), buffer.end(), std::back_inserter(text));
-
-  DrawText(text, color, 300, 300, face, context);
+  DrawText(buffer, color, 300, 300, face, context);
 }
 
 void FreeTypeOutlineScene::Cleanup(const Context &context) {
@@ -74,17 +71,22 @@ void FreeTypeOutlineScene::DrawSpansCallback(const int y, const int count,
   }
 }
 
-void FreeTypeOutlineScene::DrawText(const std::wstring &text,
+void FreeTypeOutlineScene::DrawText(const std::array<char, bufferSize> &text,
                                     const SDL_Color &color, const int &baseline,
                                     const int &x_start, const FT_Face &face,
                                     const Context &context) {
+
+  std::vector<FT_ULong> charactors;
+  auto end_it = utf8::find_invalid(text.begin(), text.end());
+  utf8::utf8to16(text.begin(), end_it, std::back_inserter(charactors));
+
   int x = x_start;
 
   SpanAdditionData addl;
   addl.color = color;
 
-  for (unsigned int i = 0; i < text.length(); i++) {
-    FT_Load_Char(face, text[i], FT_LOAD_NO_BITMAP | FT_LOAD_NO_HINTING);
+  for (auto c : charactors) {
+    FT_Load_Char(face, c, FT_LOAD_NO_BITMAP | FT_LOAD_NO_HINTING);
     addl.dest.x = x;
     addl.dest.y = baseline;
     addl.renderer = context.renderer;

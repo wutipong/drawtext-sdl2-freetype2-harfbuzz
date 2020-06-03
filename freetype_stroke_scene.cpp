@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 #include <utf8.h>
+#include <vector>
 
 #include "menu_scene.hpp"
 #include "texture.hpp"
@@ -16,8 +17,8 @@ bool FreeTypeStrokeScene::Init(const Context &context) {
 
   FT_Stroker_New(library, &stroker);
 
-  buffer.resize(bufferSize);
-  std::copy(TEXT.begin(), TEXT.end(), buffer.begin());
+  std::fill(buffer.begin(), buffer.end(), 0);
+  std::copy(std::begin(TEXT), std::end(TEXT), std::begin(buffer));
 
   return true;
 }
@@ -26,6 +27,7 @@ void FreeTypeStrokeScene::Tick(const Context &context) {
   ImGui::Begin("Menu");
 
   ImGui::InputText("text", buffer.data(), bufferSize);
+
   ImGui::SliderInt("font size", &fontSize, 0, 128);
 
   float c[3]{color.r / 255.0f, color.g / 255.0f, color.b / 255.0f};
@@ -60,10 +62,7 @@ void FreeTypeStrokeScene::Tick(const Context &context) {
   FT_Stroker_Set(stroker, borderSize << 6, FT_STROKER_LINECAP_ROUND,
                  FT_STROKER_LINEJOIN_ROUND, 0);
 
-  std::wstring text;
-  utf8::utf8to16(buffer.begin(), buffer.end(), std::back_inserter(text));
-
-  DrawText(text, color, 300, 300, face, stroker, border_color,
+  DrawText(buffer, color, 300, 300, face, stroker, border_color,
            context.renderer);
 }
 
@@ -96,18 +95,22 @@ void FreeTypeStrokeScene::DrawGlyph(FT_Glyph glyph, const SDL_Color &color,
   x += (glyph_bitmap->root.advance.x >> 16);
 }
 
-void FreeTypeStrokeScene::DrawText(const std::wstring &text,
+void FreeTypeStrokeScene::DrawText(const std::array<char, bufferSize> &text,
                                    const SDL_Color &color, const int &baseline,
                                    const int &x_start, const FT_Face &face,
                                    const FT_Stroker &stroker,
                                    const SDL_Color &border_color,
                                    SDL_Renderer *renderer) {
+  std::vector<FT_ULong> charactors;
+  auto end_it = utf8::find_invalid(text.begin(), text.end());
+  utf8::utf8to16(text.begin(), end_it, std::back_inserter(charactors));
+
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
   // Pass#1 Border
   int x = x_start;
-  for (unsigned int i = 0; i < text.length(); i++) {
-    FT_Load_Char(face, text[i], FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING);
+  for (auto c : charactors) {
+    FT_Load_Char(face, c, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING);
 
     FT_Glyph glyph;
     FT_Get_Glyph(face->glyph, &glyph);
@@ -119,8 +122,8 @@ void FreeTypeStrokeScene::DrawText(const std::wstring &text,
 
   // Pass#2 Glyph
   x = x_start;
-  for (unsigned int i = 0; i < text.length(); i++) {
-    FT_Load_Char(face, text[i], FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING);
+  for (auto c : charactors) {
+    FT_Load_Char(face, c, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING);
 
     FT_Glyph glyph;
     FT_Get_Glyph(face->glyph, &glyph);

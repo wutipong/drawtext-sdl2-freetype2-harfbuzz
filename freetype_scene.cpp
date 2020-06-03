@@ -1,27 +1,30 @@
 #include "freetype_scene.hpp"
 
 #include <algorithm>
-#include <codecvt>
+#include <vector>
+
 #include <imgui.h>
+#include <utf8.h>
 
 #include "menu_scene.hpp"
 #include "texture.hpp"
-#include <utf8.h>
 
 bool FreeTypeScene::Init(const Context &context) {
   auto error = FT_New_Face(context.ftLibrary, FONT, 0, &face);
   if (error)
     return false;
 
-  buffer.resize(bufferSize);
-  std::copy(TEXT.begin(), TEXT.end(), buffer.begin());
+  std::fill(buffer.begin(), buffer.end(), 0);
+  std::copy(std::begin(TEXT), std::end(TEXT), std::begin(buffer));
 
   return true;
 }
 
 void FreeTypeScene::Tick(const Context &context) {
+
   ImGui::Begin("Menu");
   ImGui::InputText("text", buffer.data(), bufferSize);
+
   ImGui::SliderInt("font size", &fontSize, 0, 128);
 
   float c[4]{color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, 1.0};
@@ -43,20 +46,22 @@ void FreeTypeScene::Tick(const Context &context) {
 
   FT_Set_Pixel_Sizes(face, 0, fontSize);
 
-  std::wstring text;
-  utf8::utf8to16(buffer.begin(), buffer.end(), std::back_inserter(text));
-
-  DrawText(text, color, 300, 300, face, context.renderer);
+  DrawText(buffer, color, 300, 300, face, context.renderer);
 }
 
 void FreeTypeScene::Cleanup(const Context &context) { FT_Done_Face(face); }
 
-void FreeTypeScene::DrawText(const std::wstring &text, const SDL_Color &color,
-                             const int &baseline, const int &x_start,
-                             const FT_Face &face, SDL_Renderer *renderer) {
+void FreeTypeScene::DrawText(const std::array<char, bufferSize> &text,
+                             const SDL_Color &color, const int &baseline,
+                             const int &x_start, const FT_Face &face,
+                             SDL_Renderer *renderer) {
   int x = x_start;
 
-  for (auto c : text) {
+  std::vector<wchar_t> charactors;
+  auto end_it = utf8::find_invalid(text.begin(), text.end());
+  utf8::utf8to16(text.begin(), end_it, std::back_inserter(charactors));
+
+  for (auto c : charactors) {
     FT_Load_Char(face, c, FT_LOAD_RENDER);
 
     SDL_Texture *glyph_texture =

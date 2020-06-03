@@ -8,7 +8,7 @@
 #include <harfbuzz/hb-ft.h>
 #include <harfbuzz/hb.h>
 #include <string>
-#include <vector>
+#include <array>
 
 #include "scene.hpp"
 
@@ -19,21 +19,22 @@ public:
   virtual void Cleanup(const Context &context);
 
 private:
-  static void DrawText(const std::wstring &text, const SDL_Color &color,
-                       const int &baseline, const int &x_start,
-                       const FT_Face &face, hb_font_t *hb_font,
-                       SDL_Renderer *renderer);
+  static constexpr size_t bufferSize = 256;
+  static void DrawText(const std::array<char, bufferSize> &text,
+                       const SDL_Color &color, const int &baseline,
+                       const int &x_start, const FT_Face &face,
+                       hb_font_t *hb_font, SDL_Renderer *renderer);
 
-  std::string TEXT = "Test";
+  const std::string TEXT = "Test";
   const char *FONT = "Sarabun-Regular.ttf";
+
   int fontSize = 64;
-  SDL_Color color;
+  SDL_Color color = {0, 0, 0, 255};
 
   FT_Face face;
   hb_font_t *hb_font;
 
-  std::vector<char> buffer;
-  static constexpr size_t bufferSize = 256;
+  std::array<char, bufferSize> buffer;
 };
 
 #endif
