@@ -6,15 +6,16 @@ project(sdl-ft)
 # add the executable
 add_executable(main 
 	"main.cpp" 
-	"scene.cpp" 
+	"scene.hpp" "scene.cpp" 
 	"imgui_sdl/imgui_sdl.h" "imgui_sdl/imgui_sdl.cpp" 
-	"imgui_impl_sdl.cpp" "imgui_impl_sdl.h"  
+	"imgui_impl_sdl.h" "imgui_impl_sdl.cpp"
+	"texture.hpp" "texture.cpp" 
 	"menu_scene.hpp" "menu_scene.cpp" 
 	"freetype_scene.hpp" "freetype_scene.cpp" 
 	"freetype_outline_scene.hpp" "freetype_outline_scene.cpp" 
 	"freetype_stroke_scene.hpp" "freetype_stroke_scene.cpp" 
 	"freetype_harfbuzz_scene.hpp" "freetype_harfbuzz_scene.cpp"
-	"texture.hpp" "texture.cpp" "freetype_outline_scene.hpp"  )
+	)
 
 find_package(freetype CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
