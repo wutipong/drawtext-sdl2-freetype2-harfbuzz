@@ -51,6 +51,8 @@ void FreeTypeHarfbuzzScene::Tick(const Context &context) {
   std::wstring text;
   utf8::utf8to16(buffer.begin(), buffer.end(), std::back_inserter(text));
 
+  hb_ft_font_changed(hb_font);
+  
   DrawText(text, color, 300, 300, face, hb_font, context.renderer);
 }
 
