@@ -5,10 +5,10 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include <string>
-
 #include <harfbuzz/hb-ft.h>
 #include <harfbuzz/hb.h>
+#include <string>
+#include <vector>
 
 #include "scene.hpp"
 
@@ -24,11 +24,16 @@ private:
                        const FT_Face &face, hb_font_t *hb_font,
                        SDL_Renderer *renderer);
 
-  const std::wstring TEXT = L"เก็บใจ เก็บไว้มานาน เก็บมันคล้าย ๆ รอใคร";
+  std::string TEXT = "Test";
   const char *FONT = "Sarabun-Regular.ttf";
+  int fontSize = 64;
+  SDL_Color color;
 
   FT_Face face;
   hb_font_t *hb_font;
+
+  std::vector<char> buffer;
+  static constexpr size_t bufferSize = 256;
 };
 
 #endif

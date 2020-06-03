@@ -19,7 +19,7 @@ bool FreeTypeScene::Init(SDL_Renderer *renderer) {
   buffer.resize(bufferSize);
   std::copy(TEXT.begin(), TEXT.end(), buffer.begin());
 
-  color = {128, 128, 128, 255};
+  color = {0, 0, 0, 255};
 
   return true;
 }

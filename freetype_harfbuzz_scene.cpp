@@ -1,6 +1,7 @@
 #include "freetype_harfbuzz_scene.hpp"
 
 #include <imgui.h>
+#include <utf8.h>
 
 #include "menu_scene.hpp"
 #include "texture.hpp"
@@ -16,25 +17,42 @@ bool FreeTypeHarfbuzzScene::Init(SDL_Renderer *renderer) {
   FT_Set_Pixel_Sizes(face, 0, 64);
   hb_font = hb_ft_font_create(face, 0);
 
+  buffer.resize(bufferSize);
+  std::copy(TEXT.begin(), TEXT.end(), buffer.begin());
+
+  color = {0, 0, 0, 255};
+
   return true;
 }
 
 void FreeTypeHarfbuzzScene::Tick(SDL_Renderer *renderer) {
   ImGui::Begin("Menu");
-  if (ImGui::Button("Back")) {
-    ImGui::End();
+  ImGui::InputText("text", buffer.data(), bufferSize);
+  ImGui::SliderInt("font size", &fontSize, 0, 128);
+
+  float c[4]{color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, 1.0};
+
+  ImGui::ColorPicker4("color", c, ImGuiColorEditFlags_InputRGB);
+  color.r = c[0] * 255;
+  color.g = c[1] * 255;
+  color.b = c[2] * 255;
+
+  bool quit = ImGui::Button("Back");
+
+  ImGui::End();
+
+  if (quit) {
     ChangeScene<MenuScene>(renderer);
 
     return;
   }
-  ImGui::End();
 
-  SDL_Color color;
-  color.r = 0x80;
-  color.g = 0xff;
-  color.b = 0xaa;
+  FT_Set_Pixel_Sizes(face, 0, fontSize);
 
-  DrawText(TEXT, color, 300, 300, face, hb_font, renderer);
+  std::wstring text;
+  utf8::utf8to16(buffer.begin(), buffer.end(), std::back_inserter(text));
+
+  DrawText(text, color, 300, 300, face, hb_font, renderer);
 }
 
 void FreeTypeHarfbuzzScene::Cleanup(SDL_Renderer *renderer) {
