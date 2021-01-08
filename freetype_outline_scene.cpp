@@ -6,7 +6,7 @@
 
 #include "menu_scene.hpp"
 #include "texture.hpp"
-#include <utf8.h>
+#include <utf8cpp/utf8.h>
 #include <vector>
 
 #include <ft2build.h>

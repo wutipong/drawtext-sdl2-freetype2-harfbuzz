@@ -21,8 +21,9 @@ find_package(freetype CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(harfbuzz CONFIG REQUIRED)
+find_package(utf8cpp CONFIG REQUIRED)
 
-target_link_libraries(main PRIVATE SDL2::SDL2 SDL2::SDL2main imgui::imgui freetype harfbuzz::harfbuzz)
+target_link_libraries(main PRIVATE SDL2::SDL2 SDL2::SDL2main imgui::imgui freetype harfbuzz::harfbuzz utf8cpp)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/Sarabun/fonts/Sarabun-Regular.ttf
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
