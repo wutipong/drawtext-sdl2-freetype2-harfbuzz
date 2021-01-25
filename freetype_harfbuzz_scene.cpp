@@ -67,7 +67,9 @@ void FreeTypeHarfbuzzScene::DrawText(const std::array<char, bufferSize> &text,
   hb_buffer_set_script(buffer, HB_SCRIPT_THAI);
 
   std::vector<uint16_t> charactors;
-  auto end_it = utf8::find_invalid(text.begin(), text.end());
+  auto end_it = std::find(text.begin(), text.end(), 0);
+  end_it = utf8::find_invalid(text.begin(), end_it);
+
   utf8::utf8to16(text.begin(), end_it, std::back_inserter(charactors));
 
   hb_buffer_add_utf16(buffer, charactors.data(), charactors.size(), 0,

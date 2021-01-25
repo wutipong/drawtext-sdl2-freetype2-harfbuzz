@@ -102,7 +102,8 @@ void FreeTypeStrokeScene::DrawText(const std::array<char, bufferSize> &text,
                                    const SDL_Color &border_color,
                                    SDL_Renderer *renderer) {
   std::vector<FT_ULong> charactors;
-  auto end_it = utf8::find_invalid(text.begin(), text.end());
+  auto end_it = std::find(text.begin(), text.end(), 0);
+  end_it = utf8::find_invalid(text.begin(), end_it);
   utf8::utf8to16(text.begin(), end_it, std::back_inserter(charactors));
 
   SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);

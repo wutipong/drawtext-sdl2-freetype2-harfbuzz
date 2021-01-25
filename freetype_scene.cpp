@@ -23,7 +23,7 @@ bool FreeTypeScene::Init(const Context &context) {
 void FreeTypeScene::Tick(const Context &context) {
 
   ImGui::Begin("Menu");
-  ImGui::InputText("text", buffer.data(), bufferSize);
+  ImGui::InputText("text", buffer.data(), buffer.size());
 
   ImGui::SliderInt("font size", &fontSize, 0, 128);
 
@@ -58,7 +58,9 @@ void FreeTypeScene::DrawText(const std::array<char, bufferSize> &text,
   int x = x_start;
 
   std::vector<wchar_t> charactors;
-  auto end_it = utf8::find_invalid(text.begin(), text.end());
+  auto end_it = std::find(text.begin(), text.end(), 0);
+  end_it = utf8::find_invalid(text.begin(), end_it);
+
   utf8::utf8to16(text.begin(), end_it, std::back_inserter(charactors));
 
   for (auto c : charactors) {
