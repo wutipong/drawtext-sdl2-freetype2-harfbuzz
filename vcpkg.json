@@ -1,0 +1,11 @@
+{
+  "name": "font-render-tester",
+  "version-string": "0.1.0-dev",
+  "dependencies": [
+    "sdl2",
+    "imgui",
+    "harfbuzz",
+    "freetype",
+    "utfcpp"
+  ]
+}
