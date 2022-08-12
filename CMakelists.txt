@@ -7,8 +7,6 @@ project(sdl-ft)
 add_executable(main 
 	"main.cpp" 
 	"scene.hpp" "scene.cpp" 
-	"imgui_sdl/imgui_sdl.h" "imgui_sdl/imgui_sdl.cpp" 
-	"imgui_impl_sdl.h" "imgui_impl_sdl.cpp"
 	"texture.hpp" "texture.cpp" 
 	"menu_scene.hpp" "menu_scene.cpp" 
 	"freetype_scene.hpp" "freetype_scene.cpp" 

@@ -1,8 +1,8 @@
 #include <SDL2/SDL.h>
 #include <imgui.h>
+#include <imgui_impl_sdl.h>
+#include <imgui_impl_sdlrenderer.h>
 
-#include "imgui_impl_sdl.h"
-#include "imgui_sdl/imgui_sdl.h"
 #include "menu_scene.hpp"
 #include "scene.hpp"
 #include "context.hpp"
@@ -23,8 +23,8 @@ int main(int argc, char **argv) {
   io.Fonts->AddFontFromFileTTF("Sarabun-Regular.ttf", 20.0f, NULL,
                                io.Fonts->GetGlyphRangesThai());
 
-  ImGuiSDL::Initialize(renderer, WIDTH, HEIGHT);
-  ImGui_ImplSDL2_Init(window);
+  ImGui_ImplSDLRenderer_Init(renderer);
+  ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
 
   Context c{renderer, nullptr};
   FT_Init_FreeType(&c.ftLibrary);
@@ -40,23 +40,21 @@ int main(int argc, char **argv) {
     SDL_SetRenderDrawColor(renderer, 0x50, 0x82, 0xaa, 0xff);
     SDL_RenderClear(renderer);
 
+    ImGui_ImplSDLRenderer_NewFrame();
+    ImGui_ImplSDL2_NewFrame(window);
     ImGui::NewFrame();
 
     Scene::TickCurrent(c);
 
-    ImGui_ImplSDL2_UpdateMousePosAndButtons();
-    ImGui_ImplSDL2_UpdateMouseCursor();
-    ImGui_ImplSDL2_UpdateGamepads();
-
     ImGui::Render();
-    ImGuiSDL::Render(ImGui::GetDrawData());
+    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
 
     SDL_RenderPresent(renderer);
     SDL_Delay(10);
   }
 
   ImGui_ImplSDL2_Shutdown();
-  ImGuiSDL::Deinitialize();
+  ImGui_ImplSDLRenderer_Shutdown();
   ImGui::DestroyContext();
 
   FT_Done_FreeType(c.ftLibrary);

@@ -3,9 +3,15 @@
   "version-string": "0.1.0-dev",
   "dependencies": [
     "sdl2",
-    "imgui",
     "harfbuzz",
     "freetype",
-    "utfcpp"
+    "utfcpp",
+    {
+      "name": "imgui",
+      "features": [
+        "sdl2-renderer-binding",
+        "sdl2-binding"
+      ]
+    }
   ]
 }
