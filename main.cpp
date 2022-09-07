@@ -4,7 +4,6 @@
 #include <imgui_impl_sdlrenderer.h>
 
 #include "context.hpp"
-#include "menu_scene.hpp"
 #include "scene.hpp"
 
 constexpr int WIDTH = 1280;
@@ -20,7 +19,7 @@ int main(int argc, char **argv) {
 
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
-  io.Fonts->AddFontFromFileTTF("Sarabun-Regular.ttf", 20.0f, NULL,
+  io.Fonts->AddFontFromFileTTF("Sarabun-Regular.ttf", 20.0f, nullptr,
                                io.Fonts->GetGlyphRangesThai());
 
   ImGui_ImplSDLRenderer_Init(renderer);

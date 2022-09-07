@@ -24,12 +24,14 @@ void FreeTypeScene::Tick(const Context &context) {
 
   ImGui::SliderInt("font size", &fontSize, 0, 128);
 
-  float c[4]{color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, 1.0};
+  float c[]{static_cast<float>(color.r) / 255.0f,
+            static_cast<float>(color.g) / 255.0f,
+            static_cast<float>(color.b) / 255.0f};
 
   ImGui::ColorPicker4("color", c, ImGuiColorEditFlags_InputRGB);
-  color.r = c[0] * 255;
-  color.g = c[1] * 255;
-  color.b = c[2] * 255;
+  color.r = static_cast<Uint8>(c[0] * 255);
+  color.g = static_cast<Uint8>(c[1] * 255);
+  color.b = static_cast<Uint8>(c[2] * 255);
 
   bool quit = ImGui::Button("Back");
 
@@ -68,13 +70,13 @@ void FreeTypeScene::DrawText(const std::array<char, BufferSize> &text,
 
     if (glyph_texture != nullptr) {
       SDL_Rect dest;
-      SDL_QueryTexture(glyph_texture, NULL, NULL, &dest.w, &dest.h);
+      SDL_QueryTexture(glyph_texture, nullptr, nullptr, &dest.w, &dest.h);
       dest.x = x + (face->glyph->metrics.horiBearingX >> 6);
       dest.y = baseline - (face->glyph->metrics.horiBearingY >> 6);
 
       SDL_SetTextureBlendMode(glyph_texture, SDL_BLENDMODE_BLEND);
       SDL_SetTextureColorMod(glyph_texture, color.r, color.g, color.b);
-      SDL_RenderCopy(renderer, glyph_texture, NULL, &dest);
+      SDL_RenderCopy(renderer, glyph_texture, nullptr, &dest);
       SDL_DestroyTexture(glyph_texture);
     }
 

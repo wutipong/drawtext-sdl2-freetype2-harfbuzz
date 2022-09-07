@@ -14,7 +14,7 @@ bool FreeTypeHarfbuzzScene::Init(const Context &context) {
     return false;
 
   FT_Set_Pixel_Sizes(face, 0, 64);
-  hb_font = hb_ft_font_create(face, 0);
+  hb_font = hb_ft_font_create(face, nullptr);
 
   return true;
 }
@@ -24,12 +24,14 @@ void FreeTypeHarfbuzzScene::Tick(const Context &context) {
   ImGui::InputText("text", buffer.data(), BufferSize);
   ImGui::SliderInt("font size", &fontSize, 0, 128);
 
-  float c[4]{color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, 1.0};
+  float c[]{static_cast<float>(color.r) / 255.0f,
+             static_cast<float>(color.g) / 255.0f,
+             static_cast<float>(color.b) / 255.0f};
 
-  ImGui::ColorPicker4("color", c, ImGuiColorEditFlags_InputRGB);
-  color.r = c[0] * 255;
-  color.g = c[1] * 255;
-  color.b = c[2] * 255;
+  ImGui::ColorPicker3("color", c, ImGuiColorEditFlags_InputRGB);
+  color.r = static_cast<Uint8>(c[0] * 255);
+  color.g = static_cast<Uint8>(c[1] * 255);
+  color.b = static_cast<Uint8>(c[2] * 255);
 
   bool quit = ImGui::Button("Back");
 
@@ -62,21 +64,22 @@ void FreeTypeHarfbuzzScene::DrawText(const std::array<char, BufferSize> &text,
   hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
   hb_buffer_set_script(buffer, HB_SCRIPT_THAI);
 
-  std::vector<uint16_t> charactors;
+  std::vector<uint16_t> characters;
   auto end_it = std::find(text.begin(), text.end(), 0);
   end_it = utf8::find_invalid(text.begin(), end_it);
 
-  utf8::utf8to16(text.begin(), end_it, std::back_inserter(charactors));
+  utf8::utf8to16(text.begin(), end_it, std::back_inserter(characters));
 
-  hb_buffer_add_utf16(buffer, charactors.data(), charactors.size(), 0,
-                      charactors.size());
+  hb_buffer_add_utf16(buffer, characters.data(),
+                      static_cast<int>(characters.size()), 0,
+                      static_cast<int>(characters.size()));
 
-  hb_shape(hb_font, buffer, NULL, 0);
+  hb_shape(hb_font, buffer, nullptr, 0);
 
   unsigned int glyph_count = hb_buffer_get_length(buffer);
-  hb_glyph_info_t *glyph_infos = hb_buffer_get_glyph_infos(buffer, NULL);
+  hb_glyph_info_t *glyph_infos = hb_buffer_get_glyph_infos(buffer, nullptr);
   hb_glyph_position_t *glyph_positions =
-      hb_buffer_get_glyph_positions(buffer, NULL);
+      hb_buffer_get_glyph_positions(buffer, nullptr);
 
   int x = x_start;
 
@@ -88,8 +91,10 @@ void FreeTypeHarfbuzzScene::DrawText(const std::array<char, BufferSize> &text,
 
     if (glyph_texture != nullptr) {
       SDL_Rect dest;
-      SDL_QueryTexture(glyph_texture, NULL, NULL, &dest.w, &dest.h);
+      SDL_QueryTexture(glyph_texture, nullptr, nullptr, &dest.w, &dest.h);
 
+      // FreeType's metrics is in 26.6 fixed-point format.
+      // shift the number to the right by 6 bit to round it off to integer.
       dest.x = x + (face->glyph->metrics.horiBearingX >> 6) +
                (glyph_positions[i].x_offset >> 6);
       dest.y = baseline - (face->glyph->metrics.horiBearingY >> 6) -
@@ -97,7 +102,7 @@ void FreeTypeHarfbuzzScene::DrawText(const std::array<char, BufferSize> &text,
 
       SDL_SetTextureBlendMode(glyph_texture, SDL_BLENDMODE_BLEND);
       SDL_SetTextureColorMod(glyph_texture, color.r, color.g, color.b);
-      SDL_RenderCopy(renderer, glyph_texture, NULL, &dest);
+      SDL_RenderCopy(renderer, glyph_texture, nullptr, &dest);
       SDL_DestroyTexture(glyph_texture);
     }
 
