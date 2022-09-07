@@ -10,12 +10,9 @@
 #include "texture.hpp"
 
 bool FreeTypeScene::Init(const Context &context) {
-  auto error = FT_New_Face(context.ftLibrary, FONT, 0, &face);
+  auto error = FT_New_Face(context.ftLibrary, FontFile, 0, &face);
   if (error)
     return false;
-
-  std::fill(buffer.begin(), buffer.end(), 0);
-  std::copy(std::begin(TEXT), std::end(TEXT), std::begin(buffer));
 
   return true;
 }
@@ -51,7 +48,7 @@ void FreeTypeScene::Tick(const Context &context) {
 
 void FreeTypeScene::Cleanup(const Context &context) { FT_Done_Face(face); }
 
-void FreeTypeScene::DrawText(const std::array<char, bufferSize> &text,
+void FreeTypeScene::DrawText(const std::array<char, BufferSize> &text,
                              const SDL_Color &color, const int &baseline,
                              const int &x_start, const FT_Face &face,
                              SDL_Renderer *renderer) {
@@ -67,7 +64,7 @@ void FreeTypeScene::DrawText(const std::array<char, bufferSize> &text,
     FT_Load_Char(face, c, FT_LOAD_RENDER);
 
     SDL_Texture *glyph_texture =
-        CreateTextureFromFT_Bitmap(renderer, face->glyph->bitmap, color);
+        CreateTextureFromFT_Bitmap(renderer, face->glyph->bitmap);
 
     if (glyph_texture != nullptr) {
       SDL_Rect dest;
@@ -76,6 +73,7 @@ void FreeTypeScene::DrawText(const std::array<char, bufferSize> &text,
       dest.y = baseline - (face->glyph->metrics.horiBearingY >> 6);
 
       SDL_SetTextureBlendMode(glyph_texture, SDL_BLENDMODE_BLEND);
+      SDL_SetTextureColorMod(glyph_texture, color.r, color.g, color.b);
       SDL_RenderCopy(renderer, glyph_texture, NULL, &dest);
       SDL_DestroyTexture(glyph_texture);
     }

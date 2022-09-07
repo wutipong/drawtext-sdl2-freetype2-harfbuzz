@@ -9,23 +9,19 @@
 #include "texture.hpp"
 
 bool FreeTypeHarfbuzzScene::Init(const Context &context) {
-  auto error = FT_New_Face(context.ftLibrary, FONT, 0, &face);
+  auto error = FT_New_Face(context.ftLibrary, FontFile, 0, &face);
   if (error)
     return false;
 
   FT_Set_Pixel_Sizes(face, 0, 64);
   hb_font = hb_ft_font_create(face, 0);
 
-
-  std::fill(buffer.begin(), buffer.end(), 0);
-  std::copy(std::begin(TEXT), std::end(TEXT), buffer.begin());
-
   return true;
 }
 
 void FreeTypeHarfbuzzScene::Tick(const Context &context) {
   ImGui::Begin("Menu");
-  ImGui::InputText("text", buffer.data(), bufferSize);
+  ImGui::InputText("text", buffer.data(), BufferSize);
   ImGui::SliderInt("font size", &fontSize, 0, 128);
 
   float c[4]{color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, 1.0};
@@ -56,7 +52,7 @@ void FreeTypeHarfbuzzScene::Cleanup(const Context &context) {
   FT_Done_Face(face);
 }
 
-void FreeTypeHarfbuzzScene::DrawText(const std::array<char, bufferSize> &text,
+void FreeTypeHarfbuzzScene::DrawText(const std::array<char, BufferSize> &text,
                                      const SDL_Color &color,
                                      const int &baseline, const int &x_start,
                                      const FT_Face &face, hb_font_t *hb_font,
@@ -88,7 +84,7 @@ void FreeTypeHarfbuzzScene::DrawText(const std::array<char, bufferSize> &text,
     FT_Load_Glyph(face, glyph_infos[i].codepoint, FT_LOAD_RENDER);
 
     SDL_Texture *glyph_texture =
-        CreateTextureFromFT_Bitmap(renderer, face->glyph->bitmap, color);
+        CreateTextureFromFT_Bitmap(renderer, face->glyph->bitmap);
 
     if (glyph_texture != nullptr) {
       SDL_Rect dest;
@@ -100,6 +96,7 @@ void FreeTypeHarfbuzzScene::DrawText(const std::array<char, bufferSize> &text,
                (glyph_positions[i].y_offset >> 6);
 
       SDL_SetTextureBlendMode(glyph_texture, SDL_BLENDMODE_BLEND);
+      SDL_SetTextureColorMod(glyph_texture, color.r, color.g, color.b);
       SDL_RenderCopy(renderer, glyph_texture, NULL, &dest);
       SDL_DestroyTexture(glyph_texture);
     }

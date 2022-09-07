@@ -12,14 +12,15 @@
 
 class FreeTypeStrokeScene : public Scene {
 public:
-  virtual bool Init(const Context &context);
-  virtual void Tick(const Context &context);
-  virtual void Cleanup(const Context &context);
+  bool Init(const Context &context) override;
+  void Tick(const Context &context) override;
+  void Cleanup(const Context &context) override;
 
 private:
-  static constexpr size_t bufferSize = 256;
+  static constexpr size_t BufferSize{256};
+  static constexpr auto FontFile{"Sarabun-Regular.ttf"};
 
-  static void DrawText(const std::array<char, bufferSize> &text,
+  static void DrawText(const std::array<char, BufferSize> &text,
                        const SDL_Color &color, const int &baseline,
                        const int &x_start, const FT_Face &face,
                        const FT_Stroker &stroker, const SDL_Color &border_color,
@@ -27,9 +28,6 @@ private:
 
   static void DrawGlyph(FT_Glyph glyph, const SDL_Color &color, int &x,
                         const int &baseline, SDL_Renderer *renderer);
-
-  const std::string TEXT = "Test";
-  static constexpr auto FONT = "Sarabun-Regular.ttf";
 
   FT_Face face;
   FT_Stroker stroker;
@@ -39,7 +37,7 @@ private:
 
   int borderSize = 2;
   SDL_Color border_color = {0xEE, 0x10, 0xCC};
-  std::array<char, bufferSize> buffer;
+  std::array<char, BufferSize> buffer {"Hello World"};
 };
 
 #endif

@@ -11,14 +11,11 @@ static FT_Library library;
 
 bool FreeTypeStrokeScene::Init(const Context &context) {
   FT_Init_FreeType(&library);
-  auto error = FT_New_Face(library, FONT, 0, &face);
+  auto error = FT_New_Face(library, FontFile, 0, &face);
   if (error)
     return false;
 
   FT_Stroker_New(library, &stroker);
-
-  std::fill(buffer.begin(), buffer.end(), 0);
-  std::copy(std::begin(TEXT), std::end(TEXT), std::begin(buffer));
 
   return true;
 }
@@ -26,7 +23,7 @@ bool FreeTypeStrokeScene::Init(const Context &context) {
 void FreeTypeStrokeScene::Tick(const Context &context) {
   ImGui::Begin("Menu");
 
-  ImGui::InputText("text", buffer.data(), bufferSize);
+  ImGui::InputText("text", buffer.data(), BufferSize);
 
   ImGui::SliderInt("font size", &fontSize, 0, 128);
 
@@ -80,7 +77,7 @@ void FreeTypeStrokeScene::DrawGlyph(FT_Glyph glyph, const SDL_Color &color,
 
   if (glyph_bitmap->bitmap.width != 0 && glyph_bitmap->bitmap.rows != 0) {
     SDL_Texture *glyph_texture =
-        CreateTextureFromFT_Bitmap(renderer, glyph_bitmap->bitmap, color);
+        CreateTextureFromFT_Bitmap(renderer, glyph_bitmap->bitmap);
 
     SDL_Rect dest;
     SDL_QueryTexture(glyph_texture, NULL, NULL, &dest.w, &dest.h);
@@ -88,6 +85,7 @@ void FreeTypeStrokeScene::DrawGlyph(FT_Glyph glyph, const SDL_Color &color,
     dest.y = baseline - (glyph_bitmap->top);
 
     SDL_SetTextureBlendMode(glyph_texture, SDL_BLENDMODE_BLEND);
+    SDL_SetTextureColorMod(glyph_texture, color.r, color.g, color.b);
 
     SDL_RenderCopy(renderer, glyph_texture, NULL, &dest);
     SDL_DestroyTexture(glyph_texture);
@@ -95,7 +93,7 @@ void FreeTypeStrokeScene::DrawGlyph(FT_Glyph glyph, const SDL_Color &color,
   x += (glyph_bitmap->root.advance.x >> 16);
 }
 
-void FreeTypeStrokeScene::DrawText(const std::array<char, bufferSize> &text,
+void FreeTypeStrokeScene::DrawText(const std::array<char, BufferSize> &text,
                                    const SDL_Color &color, const int &baseline,
                                    const int &x_start, const FT_Face &face,
                                    const FT_Stroker &stroker,

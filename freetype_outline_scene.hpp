@@ -10,13 +10,15 @@
 
 class FreeTypeOutlineScene : public Scene {
 public:
-  virtual bool Init(const Context &context);
-  virtual void Tick(const Context &context);
-  virtual void Cleanup(const Context &context);
+  bool Init(const Context &context) override;
+  void Tick(const Context &context) override;
+  void Cleanup(const Context &context) override;
 
 private:
-  static constexpr size_t bufferSize = 256;
-  static void DrawText(const std::array<char, bufferSize> &text,
+  static constexpr size_t BufferSize{256};
+  static constexpr auto FontFile{"Sarabun-Regular.ttf"};
+
+  static void DrawText(const std::array<char, BufferSize> &text,
                        const SDL_Color &color, const int &baseline,
                        const int &x_start, const FT_Face &face,
                        const Context &context);
@@ -30,13 +32,12 @@ private:
   static void DrawSpansCallback(const int y, const int count,
                                 const FT_Span *const spans, void *const user);
 
-  const std::string TEXT = "Test";
-  const char *FONT = "Sarabun-Regular.ttf";
   FT_Face face;
   int fontSize = 64;
   SDL_Color color = {0, 0, 0, 255};
 
-  std::array<char, bufferSize> buffer;
+  std::array<char, BufferSize> buffer{"Hello World"};
+  ;
 };
 
 #endif

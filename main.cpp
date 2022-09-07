@@ -3,9 +3,9 @@
 #include <imgui_impl_sdl.h>
 #include <imgui_impl_sdlrenderer.h>
 
+#include "context.hpp"
 #include "menu_scene.hpp"
 #include "scene.hpp"
-#include "context.hpp"
 
 constexpr int WIDTH = 1280;
 constexpr int HEIGHT = 720;

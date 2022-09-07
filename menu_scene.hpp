@@ -6,9 +6,9 @@
 
 class MenuScene : public Scene {
 public:
-  virtual bool Init(const Context &context);
-  virtual void Tick(const Context &context);
-  virtual void Cleanup(const Context &context);
+  bool Init(const Context &context)override;
+  void Tick(const Context &context)override;
+  void Cleanup(const Context &context)override;
 };
 
 #endif

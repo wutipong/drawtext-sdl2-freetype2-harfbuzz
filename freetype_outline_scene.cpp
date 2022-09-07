@@ -14,18 +14,17 @@
 #include FT_OUTLINE_H
 
 bool FreeTypeOutlineScene::Init(const Context &context) {
-  auto error = FT_New_Face(context.ftLibrary, FONT, 0, &face);
+  auto error = FT_New_Face(context.ftLibrary, FontFile, 0, &face);
   if (error)
     return false;
-  std::fill(buffer.begin(), buffer.end(), 0);
-  std::copy(std::begin(TEXT), std::end(TEXT), std::begin(buffer));
+
   return true;
 }
 
 void FreeTypeOutlineScene::Tick(const Context &context) {
 
   ImGui::Begin("Menu");
-  ImGui::InputText("text", buffer.data(), bufferSize);
+  ImGui::InputText("text", buffer.data(), BufferSize);
   ImGui::SliderInt("font size", &fontSize, 0, 128);
 
   float c[4]{color.r / 255.0f, color.g / 255.0f, color.b / 255.0f, 1.0};
@@ -71,7 +70,7 @@ void FreeTypeOutlineScene::DrawSpansCallback(const int y, const int count,
   }
 }
 
-void FreeTypeOutlineScene::DrawText(const std::array<char, bufferSize> &text,
+void FreeTypeOutlineScene::DrawText(const std::array<char, BufferSize> &text,
                                     const SDL_Color &color, const int &baseline,
                                     const int &x_start, const FT_Face &face,
                                     const Context &context) {
