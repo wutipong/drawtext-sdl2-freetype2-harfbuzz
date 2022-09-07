@@ -25,10 +25,8 @@ private:
                        const FT_Stroker &stroker, const SDL_Color &border_color,
                        SDL_Renderer *renderer);
 
-  static void FreeTypeStrokeScene::DrawGlyph(FT_Glyph glyph,
-                                             const SDL_Color &color, int &x,
-                                             const int &baseline,
-                                             SDL_Renderer *renderer);
+  static void DrawGlyph(FT_Glyph glyph, const SDL_Color &color, int &x,
+                        const int &baseline, SDL_Renderer *renderer);
 
   const std::string TEXT = "Test";
   static constexpr auto FONT = "Sarabun-Regular.ttf";
